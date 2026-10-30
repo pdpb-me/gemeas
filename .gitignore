@@ -1,0 +1,21 @@
+# Dependencies (re-downloaded with npm install)
+node_modules/
+
+# Build output (GitHub Actions rebuilds it)
+dist/
+
+# Secrets and local settings - never commit these
+.env
+.env.*
+!.env.example
+
+# Editor / OS clutter
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# Local-only overrides
+*.local
