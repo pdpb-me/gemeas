@@ -23,7 +23,7 @@ export function DemoBar() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-11 w-full items-center justify-center gap-2 bg-foreground text-xs font-medium text-background"
+        className="plain flex h-11 w-full items-center justify-center gap-2 bg-foreground text-xs font-bold text-card"
       >
         <FlaskConicalIcon className="size-3.5" />
         Demo · dati inventati · {moment(now())}
@@ -60,11 +60,11 @@ export function DemoBar() {
                     type="button"
                     onClick={() => demo.open(s.id)}
                     className={cn(
-                      'flex min-h-14 flex-col justify-center rounded-xl px-3 py-2 text-left',
-                      s.id === current.id ? 'bg-primary/10 ring-1 ring-primary' : 'bg-muted',
+                      'row min-h-14 flex-col items-start justify-center gap-0 px-3 py-2',
+                      s.id === current.id && 'on',
                     )}
                   >
-                    <span className="text-sm font-semibold">{s.title}</span>
+                    <span className="text-sm font-bold">{s.title}</span>
                     <span className="text-xs text-muted-foreground">{s.about}</span>
                   </button>
                 ))}

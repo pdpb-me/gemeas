@@ -23,6 +23,12 @@ export function painLabel(score: number) {
   return PAIN_LEVELS.find((l) => l.score === level)!.label
 }
 
+// A day's bar in a chart, as a share of the chart's height. The zones get equal room,
+// and "Nessuno" still shows a small bar: no bar means no answer.
+export function painHeight(score: number) {
+  return Math.max(6, score <= 2 ? score * 15 : score <= 5 ? 30 + (score - 2) * 10 : 60 + (score - 5) * 8)
+}
+
 export function painBand(score: number): PainBand {
   const level = painLevelFor(score)
   return PAIN_LEVELS.find((l) => l.score === level)!.band

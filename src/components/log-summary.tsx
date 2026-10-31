@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils'
 
 const dot = '·'
 
-// What was logged, in one short line: "Piede ● Lieve · S 22 · D 15 rip." or "Media".
-// compact (in the day's plan): the status shows in the round mark, so the word is left out,
+// What was logged, in one short line: "Piede [Lieve] · S 22 · D 15 rip." or "Media".
+// compact (in the day's plan): the status shows in the square mark, so the word is left out,
 // and a missing answer gets a gentle "add" hint.
 export function LogSummary({ session, compact = false }: { session: DaySession; compact?: boolean }) {
   const log = session.log!
@@ -24,7 +24,7 @@ export function LogSummary({ session, compact = false }: { session: DaySession; 
   const parts: React.ReactNode[] = []
   if (!compact)
     parts.push(
-      <span key="s" className="font-semibold text-foreground">
+      <span key="s" className="font-bold text-foreground">
         {statusLabel(log.status)}
       </span>,
     )
@@ -38,8 +38,7 @@ export function LogSummary({ session, compact = false }: { session: DaySession; 
     parts.push(
       <span key="p" className="inline-flex items-center gap-1.5 whitespace-nowrap">
         {area.short}
-        <span className={cn('size-2 rounded-full', PAIN_DOT[painBand(score)])} aria-hidden />
-        <span className="text-foreground">{painLabel(score)}</span>
+        <span className={cn('chip', PAIN_DOT[painBand(score)])}>{painLabel(score)}</span>
       </span>,
     )
   if (spec && sides.length)
@@ -65,7 +64,7 @@ export function LogSummary({ session, compact = false }: { session: DaySession; 
           {hint && (
             <>
               {parts.length > 0 && <span aria-hidden>{dot}</span>}
-              <span className="text-primary">{hint}</span>
+              <span className="font-bold text-foreground underline underline-offset-4">{hint}</span>
             </>
           )}
         </span>

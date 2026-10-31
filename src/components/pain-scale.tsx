@@ -2,16 +2,10 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { PAIN_LEVELS, painLevelFor, type PainBand } from '@/lib/pain'
 import { cn } from '@/lib/utils'
 
-// Unselected: neutral outline. Only the chosen word gets its colour. The word is always shown.
-const BAND_CLASS: Record<PainBand, string> = {
-  low: 'data-[state=on]:bg-pain-low data-[state=on]:text-pain-low-foreground',
-  mid: 'data-[state=on]:bg-pain-mid data-[state=on]:text-pain-mid-foreground',
-  high: 'data-[state=on]:bg-pain-high data-[state=on]:text-pain-high-foreground',
-}
-
 type Level = { score: number; label: string; band: PainBand }
 
-// One question, answered with words (one tap saves). levels / levelFor: the 5 pain words
+// One question, answered with words (one tap saves). The chosen word is filled with ink, like
+// any pill: a status colour never marks a selection. The colour shows later, in a chip. levels / levelFor: the 5 pain words
 // by default; other scales can pass their own.
 // A tap on the chosen word keeps it (no accidental clearing); `onClear` offers a way back.
 export function PainScale({
@@ -37,7 +31,7 @@ export function PainScale({
     <fieldset className="flex min-w-0 flex-col gap-2" disabled={disabled}>
       <legend className={cn('mb-2 text-sm font-medium', hideLabel && 'sr-only')}>
         {label}
-        {hint && <span className="font-normal text-muted-foreground"> · {hint}</span>}
+        {hint && <span className="font-medium text-muted-foreground"> · {hint}</span>}
       </legend>
       <ToggleGroup
         type="single"
@@ -53,10 +47,7 @@ export function PainScale({
           <ToggleGroupItem
             key={l.score}
             value={String(l.score)}
-            className={cn(
-              'h-11 min-w-11 flex-auto px-1.5 text-[13px] text-foreground hover:text-foreground data-[state=on]:border-transparent data-[state=on]:font-semibold',
-              BAND_CLASS[l.band],
-            )}
+            className="h-11 min-w-11 flex-auto px-1.5 text-[13px]"
           >
             {l.label}
           </ToggleGroupItem>
@@ -66,8 +57,7 @@ export function PainScale({
   )
 }
 
-// A choice that isn't pain (Leggera / Media / Dura, Mattina / Sera, …): the chosen one is dark,
-// with a tick, so it can't be missed
+// A choice that isn't pain (Leggera / Media / Dura, Mattina / Sera, …): a row of pills
 export function Choice<T extends string>({
   label,
   options,
@@ -89,7 +79,7 @@ export function Choice<T extends string>({
       <ToggleGroup
         type="single"
         variant="outline"
-        spacing={0}
+        spacing={1.5}
         value={value ?? ''}
         onValueChange={(v) => v !== '' && onChange(v as T)}
         className="w-full"
@@ -99,7 +89,7 @@ export function Choice<T extends string>({
           <ToggleGroupItem
             key={o.value}
             value={o.value}
-            className="h-11 flex-1 data-[state=on]:bg-foreground data-[state=on]:font-semibold data-[state=on]:text-background"
+            className="h-11 flex-1"
           >
             {o.label}
           </ToggleGroupItem>

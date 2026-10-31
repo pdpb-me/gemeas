@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { ChevronRightIcon, MessageSquareTextIcon } from 'lucide-react'
+import { MessageSquareTextIcon } from 'lucide-react'
 import { CoachNoteSheet } from '@/components/coach-note'
 import { ErrorCard } from '@/components/states'
-import { StatusMark } from '@/components/status-mark'
+import { RowArrow, StatusMark } from '@/components/status-mark'
 import { TestHistory } from '@/components/test-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -15,7 +15,7 @@ import { useScreens } from '@/hooks/use-screens'
 import { useToday } from '@/lib/clock'
 import { addDays, daysBetween, mondayOf, weekOf } from '@/lib/dates'
 import { dayLabel, dayMonth, inDays, kg, plural, weekdayLetter, weekdayShort } from '@/lib/format'
-import { painBand, painLabel } from '@/lib/pain'
+import { painBand, painHeight, painLabel } from '@/lib/pain'
 import { countsAsDone, PAIN_DOT } from '@/lib/session-status'
 import { rightOfLeft, testDays } from '@/lib/tests'
 import { footSummary, headline, VERDICT_TEXT, type AreaSummary } from '@/lib/trends'
@@ -60,11 +60,11 @@ export function Progress({ onDeepChange }: { onDeepChange: (deep: boolean) => vo
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="gap-0">
         <header className="flex flex-col gap-3 border-b bg-card px-4 pt-4 pb-3">
           <h1 className="text-display font-bold">Progressi</h1>
-          <TabsList className="h-12 w-full">
-            <TabsTrigger value="overview" className="h-full">
+          <TabsList>
+            <TabsTrigger value="overview">
               Panoramica
             </TabsTrigger>
-            <TabsTrigger value="activities" className="h-full">
+            <TabsTrigger value="activities">
               Attività
             </TabsTrigger>
           </TabsList>
@@ -94,10 +94,10 @@ export function Progress({ onDeepChange }: { onDeepChange: (deep: boolean) => vo
 function OverviewSkeleton() {
   return (
     <div className="flex flex-col gap-3 p-4" aria-busy="true" aria-label="Caricamento">
-      <Skeleton className="h-20 rounded-xl bg-card" />
-      <Skeleton className="h-36 rounded-xl bg-card" />
-      <Skeleton className="h-40 rounded-xl bg-card" />
-      <Skeleton className="h-40 rounded-xl bg-card" />
+      <Skeleton className="h-20 rounded-xl border bg-card" />
+      <Skeleton className="h-36 rounded-xl border bg-card" />
+      <Skeleton className="h-40 rounded-xl border bg-card" />
+      <Skeleton className="h-40 rounded-xl border bg-card" />
     </div>
   )
 }
@@ -110,12 +110,12 @@ function Overview({ data, onOpen }: { data: ProgressData; onOpen: (s: Screen) =>
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <Card className="gap-1 px-4 py-4">
-        <span className="text-sm text-muted-foreground">Ultimi 7 giorni</span>
-        <p className="text-xl font-semibold text-balance">
+      <div className="feature flex-col justify-start gap-1 text-card">
+        <span className="text-sm font-bold">Ultimi 7 giorni</span>
+        <p className="text-h2 font-bold text-balance">
           {anything ? headline(foot.verdict, flare) : 'L’andamento compare qui dopo una settimana di check-in.'}
         </p>
-      </Card>
+      </div>
       <CoachRow today={data.today} />
       <WeekCard today={data.today} />
       {!anything && (
@@ -150,7 +150,7 @@ function CardButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={cn('flex flex-col gap-3 rounded-xl bg-card px-4 py-4 text-left ring-1 ring-foreground/10 hover:bg-card/80', className)}
+      className={cn('row flex-col items-stretch gap-3 px-4 py-4', className)}
     >
       {children}
     </button>
@@ -161,10 +161,10 @@ function CardTitle({ title, sub, chevron = true }: { title: string; sub?: string
   return (
     <span className="flex items-start justify-between gap-2">
       <span className="flex flex-col">
-        <span className="text-base font-semibold">{title}</span>
+        <span className="text-[17px] font-bold">{title}</span>
         {sub && <span className="text-sm text-muted-foreground">{sub}</span>}
       </span>
-      {chevron && <ChevronRightIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />}
+      {chevron && <RowArrow />}
     </span>
   )
 }
@@ -179,11 +179,11 @@ function CoachRow({ today }: { today: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex min-h-12 items-center gap-3 rounded-xl bg-card px-4 text-left ring-1 ring-foreground/10"
+        className="row min-h-12 justify-start gap-3 px-4"
       >
         <MessageSquareTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <span className="flex-1 text-sm">Nota del coach · settimana del {dayMonth(review.week_start)}</span>
-        <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden />
+        <RowArrow />
       </button>
       <CoachNoteSheet review={review} open={open} onOpenChange={setOpen} />
     </>
@@ -205,10 +205,10 @@ function WeekCard({ today }: { today: string }) {
       <div className="flex items-end justify-between gap-3">
         <div className="flex flex-col">
           {done === 0 && skipped > 0 ? (
-            <span className="text-display font-semibold">Settimana di riposo</span>
+            <span className="text-display font-bold">Settimana di riposo</span>
           ) : (
             <span className="flex items-baseline gap-1.5">
-              <span className="text-display font-semibold tabular-nums">{done}</span>
+              <span className="font-mono text-display font-medium tabular-nums">{done}</span>
               <span className="text-base text-muted-foreground">su {all.length} fatti</span>
             </span>
           )}
@@ -242,16 +242,15 @@ function FootCard({ s, onOpen }: { s: AreaSummary; onOpen: () => void }) {
       {s.typical != null ? (
         <span className="flex flex-col gap-0.5">
           <span className="flex items-center gap-2">
-            <span className={cn('size-3 rounded-full', PAIN_DOT[painBand(s.typical)])} aria-hidden />
-            <span className="text-display font-semibold">{painLabel(s.typical)}</span>
+            <span className={cn('size-3 border-2', PAIN_DOT[painBand(s.typical)])} aria-hidden />
+            <span className="text-display font-bold">{painLabel(s.typical)}</span>
           </span>
           <span className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
             Media, ultimi 7 giorni
             {s.latest && painLabel(s.latest.score) !== painLabel(s.typical) && (
               <>
                 <span aria-hidden>·</span> ultima
-                <span className={cn('size-2 rounded-full', PAIN_DOT[painBand(s.latest.score)])} aria-hidden />
-                <span className="font-semibold text-foreground">{painLabel(s.latest.score)}</span>({weekdayShort(s.latest.date)})
+                <span className={cn('chip', PAIN_DOT[painBand(s.latest.score)])}>{painLabel(s.latest.score)}</span>({weekdayShort(s.latest.date)})
               </>
             )}
           </span>
@@ -259,20 +258,20 @@ function FootCard({ s, onOpen }: { s: AreaSummary; onOpen: () => void }) {
         </span>
       ) : (
         <span className="flex flex-col gap-0.5">
-          <span className="text-base font-semibold">Ancora poche risposte</span>
+          <span className="text-[17px] font-bold">Ancora poche risposte</span>
           <span className="text-sm text-muted-foreground">{s.answered} risposte negli ultimi 7 giorni. Compare da 3.</span>
         </span>
       )}
-      <span className="flex h-10 items-end gap-0.5" aria-hidden>
+      <span className="flex h-12 items-end gap-0.5 border-b-2" aria-hidden>
         {s.series.map((d) => (
           <span
             key={d.date}
-            className={cn('flex-1 rounded-[2px]', d.score == null ? 'h-1 bg-foreground/10' : PAIN_DOT[painBand(d.score)])}
-            style={d.score == null ? undefined : { height: `${d.score === 0 ? 4 : Math.round(8 + d.score * 3.2)}px` }}
+            className={cn('flex-1', d.score != null && PAIN_DOT[painBand(d.score)])}
+            style={d.score == null ? undefined : { height: `${painHeight(d.score)}%` }}
           />
         ))}
       </span>
-      <span className="-mt-2 flex justify-between text-xs text-muted-foreground">
+      <span className="-mt-2 flex justify-between font-mono text-xs font-normal text-muted-foreground">
         <span>2 settimane fa</span>
         <span>Oggi</span>
       </span>
@@ -303,7 +302,7 @@ function TestCard({ data }: { data: ProgressData }) {
               return (
                 <span key={side} className="flex flex-col">
                   <span className="text-sm text-muted-foreground">{side === 'L' ? 'Sinistra' : 'Destra'}</span>
-                  <span className="text-display font-semibold tabular-nums">{last[side] ?? '–'}</span>
+                  <span className="font-mono text-display font-medium tabular-nums">{last[side] ?? '–'}</span>
                   {change != null && (
                     <span className="text-sm text-muted-foreground">
                       {change > 0 ? `+${change}` : change} dal {dayMonth(first.date)}
@@ -342,7 +341,7 @@ function WeightCard({ data, onOpen }: { data: ProgressData; onOpen: () => void }
       <CardTitle title="Peso" sub={`Ultimo valore ${dayMonth(last.date)}`} />
       <span className="flex items-end justify-between gap-3">
         <span className="flex flex-col">
-          <span className="text-display font-semibold tabular-nums">{kg(now?.kg ?? last.kg)}</span>
+          <span className="font-mono text-display font-medium tabular-nums">{kg(now?.kg ?? last.kg)}</span>
           <span className="text-sm text-muted-foreground">{now ? 'Media, ultimi 7 giorni' : 'Ultimo valore'}</span>
         </span>
         {recent.length >= 2 && (
@@ -350,10 +349,9 @@ function WeightCard({ data, onOpen }: { data: ProgressData; onOpen: () => void }
             <polyline
               points={recent.map((w) => `${dayX(w.date).toFixed(1)},${(36 - ((w.kg - lo) / span) * 32).toFixed(1)}`).join(' ')}
               fill="none"
-              className="stroke-foreground/70"
+              className="stroke-foreground"
               strokeWidth="2"
               vectorEffect="non-scaling-stroke"
-              strokeLinejoin="round"
             />
           </svg>
         )}

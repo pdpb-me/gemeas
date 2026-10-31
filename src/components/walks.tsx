@@ -39,7 +39,7 @@ export function DayWalks({ date }: { date: string }) {
             <div key={w.id} className="flex min-h-14 items-center gap-3 border-t pr-1 pl-4 first:border-t-0">
               <FootprintsIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-base font-semibold">Camminata</span>
+                <span className="text-[17px] font-bold">Camminata</span>
                 <span className="text-sm text-muted-foreground">{walkText(w)}</span>
               </span>
               <Button variant="ghost" size="icon" className="size-11 text-muted-foreground" aria-label="Rimuovi questa camminata" onClick={() => remove(w)}>
@@ -89,7 +89,7 @@ function WalkForm({ date, onClose }: { date: string; onClose: () => void }) {
   return (
     <form onSubmit={save} className="mx-auto flex min-h-0 w-full max-w-md flex-col">
       <DrawerHeader className="text-left">
-        <DrawerTitle className="text-xl">Aggiungi camminata</DrawerTitle>
+        <DrawerTitle className="text-h2">Aggiungi camminata</DrawerTitle>
         <DrawerDescription>Il coach la vede quando prepara il piano.</DrawerDescription>
       </DrawerHeader>
       <div className="grid grid-cols-2 gap-3 px-4">
@@ -101,13 +101,13 @@ function WalkForm({ date, onClose }: { date: string; onClose: () => void }) {
             placeholder="es. 50"
             value={minutes}
             onChange={(e) => setMinutes(e.target.value)}
-            className="h-12 text-xl font-semibold tabular-nums"
+            className="h-12 text-xl font-bold tabular-nums"
           />
           {minutes.trim() !== '' && !minOk && <span className="text-xs font-medium text-destructive">Da 1 a 600 minuti</span>}
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="walk-km">
-            Km <span className="font-normal text-muted-foreground">· facoltativo</span>
+            Km <span className="font-medium text-muted-foreground">· facoltativo</span>
           </Label>
           <Input
             id="walk-km"
@@ -115,7 +115,7 @@ function WalkForm({ date, onClose }: { date: string; onClose: () => void }) {
             placeholder="es. 4,5"
             value={distance}
             onChange={(e) => setDistance(e.target.value)}
-            className="h-12 text-xl font-semibold tabular-nums"
+            className="h-12 text-xl font-bold tabular-nums"
           />
           {!kmOk && <span className="text-xs font-medium text-destructive">Un numero fino a 100, es. 4,5</span>}
         </div>

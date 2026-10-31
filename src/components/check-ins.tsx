@@ -17,7 +17,7 @@ type CheckInsState = ReturnType<typeof useCheckIns>
 // A calm word after a hard answer: what it means for today, never alarming
 function Note({ children }: { children: React.ReactNode }) {
   return (
-    <p className="flex gap-2 rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-foreground/10">
+    <p className="banner flex gap-2">
       <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
       <span>{children}</span>
     </p>
@@ -47,14 +47,13 @@ export function MorningCheckIn({ state, ask, isToday, afternoon = false }: { sta
         <Card className="animate-fade-in flex-row items-center gap-3 py-2 pr-2 pl-4">
           <SunriseIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="text-xs font-medium text-muted-foreground">{isToday ? 'Stamattina' : 'Quella mattina'}</span>
-            <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
+            <span className="text-xs font-bold text-muted-foreground">{isToday ? 'Stamattina' : 'Quella mattina'}</span>
+            <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
               <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                 <span className="text-muted-foreground">Piede</span>
-                <span className={cn('size-2 rounded-full', PAIN_DOT[painBand(c.foot)])} aria-hidden />
-                <span className="font-semibold">{painLabel(c.foot)}</span>
+                <span className={cn('chip', PAIN_DOT[painBand(c.foot)])}>{painLabel(c.foot)}</span>
               </span>
-              {c.weight != null && <span className="font-semibold tabular-nums">{kg(c.weight)}</span>}
+              {c.weight != null && <span className="font-bold tabular-nums">{kg(c.weight)}</span>}
             </span>
           </div>
           <Button variant="ghost" className="h-11 rounded-full px-4 text-primary" onClick={() => setOpen(true)}>
@@ -66,9 +65,9 @@ export function MorningCheckIn({ state, ask, isToday, afternoon = false }: { sta
     )
 
   return (
-    <Card className="animate-fade-in gap-3 px-4 py-4">
+    <Card className="animate-fade-in gap-3 rounded-2xl px-4 py-4 shadow-[var(--shadow-m)]">
       <div className="flex flex-col gap-0.5">
-        <h2 className="text-base font-semibold">
+        <h2>
           {isToday ? (afternoon ? 'Com’era il piede stamattina?' : 'Come va il piede stamattina?') : 'Com’era il piede quella mattina?'}
         </h2>
         <p className="text-sm text-muted-foreground">Piede destro, primi passi appena alzata</p>

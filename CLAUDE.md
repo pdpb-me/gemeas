@@ -1,6 +1,6 @@
 # Gemeas: notes for Claude Code
 
-Personal training log PWA, in Italian, on iPhone (Safari, Add to Home Screen). Copied from the sister app Pisada and made its own. Two tabs: **Oggi** (morning check-in, the coach's note, the day's plan, walks) and **Progressi** (Panoramica | Attività). Built so a second person can join later with her own login and plan, on the same tables.
+Personal training log PWA, in Italian, on iPhone (Safari, Add to Home Screen). Copied from the sister app Pisada and made its own. Two tabs: **Oggi** (morning check-in, the coach's note, the day's plan, walks) and **Progressi** (Panoramica | Attività). The demo has a third, **Esercizi**: a list of public YouTube videos. Built so a second person can join later with her own login and plan, on the same tables.
 
 **This repo is public.** No real names (users, the personal trainer), health details, plans or notes in code, tests, comments or commit messages. They belong only in the database. In code the trainer is the kind `trainer`, shown as "Personal trainer". Private context lives in Claude's memory for this folder.
 
@@ -43,7 +43,7 @@ Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
 - `src/components/`: screens and cards. `today.tsx` → `check-ins.tsx`, `coach-note.tsx`, `plan-list.tsx`, `walks.tsx` → `session-screen.tsx` → `exercise-screen.tsx`. `progress.tsx` → `pain-detail.tsx`, `weight-detail.tsx`, `activities-list.tsx`. Sheets: `log-sheet.tsx`, `move-sheet.tsx`, `test-card.tsx`
 - `src/data/`: **the only way to the data.** `api.ts` (the `Backend` interface), `supabase.ts` (real, schema `gemeas`), `rules.ts` (row rules for both backends), `store.ts`, `use-query.ts`
-- `src/demo/`: `simulate.ts` (seeded 12 made-up weeks), `scenarios.ts`, `state.ts`, `memory.ts`, `demo-bar.tsx`. Open a moment with `?scenario=<id>`; `&bar=0` hides the strip
+- `src/demo/`: `simulate.ts` (seeded 12 made-up weeks), `scenarios.ts`, `state.ts`, `memory.ts`, `demo-bar.tsx`, `library.tsx` + `video-data.ts` (Esercizi: a hand-picked sample; the full datasets stay out of the repo). Open a moment with `?scenario=<id>`; `&bar=0` hides the strip
 - `src/lib/`: pure logic with tests. `src/exercises/`: the foot and calf figures (keep pose numbers as they are)
 
 ## Data words
@@ -55,7 +55,9 @@ Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
 ## Design rules
 
-shadcn first; tokens in `src/index.css`. Blue only for the main action, "done" and links. Tap targets ≥ 44 px; check at 360 px wide. Calm, not gamified: no streaks, no weight goal, no comment on weight going up or down. Pain colour always comes with its word. No sheet opens by itself. Every screen that loads has a skeleton, an error card and an empty state.
+All UI in this project uses the neo-brutalist design system: read `design/neo-brutalist-dls/DESIGN.md`, `dls.css` and `reference.html` first.
+
+shadcn components stay, restyled; `src/index.css` imports `dls.css` and maps shadcn's colour names onto its tokens (the DLS `--muted` is shadcn's `muted-foreground`). The fonts are self-hosted with Fontsource, not loaded from Google. Sage, mustard and black mean pain low, medium and high, and nothing else; session status (done, partly, skipped) reads by shape, in ink. Tap targets ≥ 44 px; check at 360 px wide. Calm, not gamified: no streaks, no weight goal, no comment on weight going up or down. Pain colour always comes with its word. No sheet opens by itself. Every screen that loads has a skeleton, an error card and an empty state.
 
 ## Gotchas
 

@@ -1,7 +1,6 @@
-import { ChevronRightIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { LogSummary } from '@/components/log-summary'
-import { StatusMark } from '@/components/status-mark'
+import { RowArrow, StatusMark } from '@/components/status-mark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { isPill } from '@/data/rules'
@@ -26,7 +25,7 @@ function QuickLog({
 }) {
   if (testFor(session.exercises))
     return (
-      <Button variant="outline" className="h-11 w-full rounded-lg" onClick={onOpen}>
+      <Button variant="outline" className="h-11 w-full" onClick={onOpen}>
         Inserisci i risultati
       </Button>
     )
@@ -39,7 +38,7 @@ function QuickLog({
   }
   if (isPill(session.kind))
     return (
-      <Button variant="outline" className="h-11 w-full rounded-lg text-sm font-semibold" onClick={() => log('done')}>
+      <Button variant="outline" className="h-11 w-full" onClick={() => log('done')}>
         Fatta
       </Button>
     )
@@ -49,7 +48,7 @@ function QuickLog({
         <Button
           key={s.value}
           variant="outline"
-          className={cn('h-11 rounded-lg text-sm', s.value === 'done' && 'font-semibold')}
+          className="h-11 px-1"
           onClick={() => log(s.value)}
         >
           {s.label}
@@ -100,7 +99,7 @@ export function PlanList({
   return (
     <Card className="gap-0 py-1">
       <div className="flex min-h-12 items-center justify-between gap-2 pr-2 pl-4">
-        <h2 className="text-base font-semibold">Piano</h2>
+        <h2>Piano</h2>
         <div className="flex items-center gap-1">
           <span className="text-sm text-muted-foreground">
             {open.length === 0 ? loggedText : past ? `${open.length} da registrare` : `${open.length} da fare`}
@@ -117,21 +116,21 @@ export function PlanList({
           <button
             type="button"
             onClick={() => onOpen(s.id, needsDetails(s))}
-            className="-mx-2 flex min-h-14 items-center gap-3 rounded-lg px-2 text-left hover:bg-muted/60"
+            className="plain flex min-h-14 items-center gap-3 text-left"
           >
             <StatusMark status={s.log?.status} past={past} />
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs font-bold text-muted-foreground">
                 {SLOT_WORD[s.slot] ?? s.slot} · {kindWord(s.kind)}
               </span>
-              <span className={cn('text-base font-semibold', s.log?.status === 'skipped' && 'text-muted-foreground')}>{s.title}</span>
+              <span className={cn('text-[17px] font-bold', s.log?.status === 'skipped' && 'text-muted-foreground')}>{s.title}</span>
               {s.log ? (
                 <LogSummary session={s} compact />
               ) : (
                 <span className="line-clamp-2 text-sm text-muted-foreground">{sessionMeta(s)}</span>
               )}
             </span>
-            <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <RowArrow />
           </button>
           {canLog && !s.log && <QuickLog session={s} onStatus={(st) => onStatus(s, st)} onOpen={() => onOpen(s.id)} />}
         </div>

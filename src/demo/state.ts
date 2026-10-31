@@ -131,6 +131,46 @@ export const demo = {
     restart()
   },
 
+  hasVideoOn(date: string, ytId: string) {
+    return state.db.plan_sessions.some((p) => p.date === date && p.video_ids.includes(ytId))
+  },
+
+  // From the Esercizi tab: the video becomes a session on that day, and the app opens on it
+  addVideo(video: { yt_id: string; name: string; title: string; duration_s: number }, kind: string, date: string, slot: string) {
+    const stamp = new Date(state.at).toISOString()
+    if (!state.db.videos.some((v) => v.yt_id === video.yt_id))
+      state.db.videos.push({
+        yt_id: video.yt_id,
+        title: video.title,
+        duration_s: video.duration_s,
+        flags: 'Scelto dal titolo: ancora da guardare',
+        notes: null,
+        available: true,
+        playlists: [],
+        tags: [],
+        published_at: null,
+        synced_at: null,
+        views: null,
+        created_at: stamp,
+        user_id: DEMO_USER,
+      })
+    state.db.plan_sessions.push({
+      id: `video-${video.yt_id}-${date}`,
+      created_at: stamp,
+      user_id: DEMO_USER,
+      block: null,
+      date,
+      exercises: [],
+      instructions: null,
+      kind,
+      position: 9,
+      slot,
+      title: video.name,
+      video_ids: [video.yt_id],
+    })
+    restart()
+  },
+
   at_: at, // exposed for scripts: at('2026-11-19', '07:40')
 }
 

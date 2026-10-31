@@ -63,7 +63,7 @@ export function Login() {
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col justify-center p-4">
-      <Card>
+      <Card className="rounded-2xl shadow-[var(--shadow-m)]">
         <CardHeader>
           <img src={`${import.meta.env.BASE_URL}icons/icon.svg`} alt="" className="mb-2 size-12 rounded-xl" />
           <CardTitle className="text-2xl">Gemeas</CardTitle>
@@ -107,7 +107,7 @@ export function Login() {
               >
                 <InputOTPGroup>
                   {Array.from({ length: CODE_LENGTH }, (_, i) => (
-                    <InputOTPSlot key={i} index={i} className="h-11 w-9 text-lg" />
+                    <InputOTPSlot key={i} index={i} className="h-11 w-9 font-mono text-lg" />
                   ))}
                 </InputOTPGroup>
               </InputOTP>
@@ -123,7 +123,7 @@ export function Login() {
           )}
         </CardContent>
       </Card>
-      <a href={`${import.meta.env.BASE_URL}demo/`} className="mt-6 self-center p-3 text-sm text-muted-foreground underline-offset-4 hover:underline">
+      <a href={`${import.meta.env.BASE_URL}demo/`} className="mt-6 self-center p-3 text-sm text-muted-foreground underline underline-offset-4">
         Vuoi solo dare un’occhiata? Apri la demo, con dati inventati
       </a>
     </main>

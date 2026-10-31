@@ -1,156 +1,121 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/familjen-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
+/* The design system, as it is. In the base layer, so a utility class can always adjust it */
+@import "../design/neo-brutalist-dls/dls.css" layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+    /* Lines are 2 px everywhere: `border` alone is enough */
+    --default-border-width: 2px;
     /* Gemeas tokens */
-    --color-pain-low: var(--pain-low);
-    --color-pain-low-foreground: var(--pain-low-foreground);
-    --color-pain-mid: var(--pain-mid);
-    --color-pain-mid-foreground: var(--pain-mid-foreground);
-    --color-pain-high: var(--pain-high);
-    --color-pain-high-foreground: var(--pain-high-foreground);
-    --color-status-done: var(--status-done);
-    --color-status-partial: var(--status-partial);
-    --color-status-skipped: var(--status-skipped);
-    /* Type scale: caption 12, secondary 14, body 16,
-       heading 20, display 28 (page titles), hero 40 (one number on a detail screen) */
+    --color-pain-low: var(--good);
+    --color-pain-mid: var(--fair);
+    --color-pain-high: var(--poor);
+    --color-panel: var(--panel);
+    /* Type scale: caption 12, secondary 14, body 16, row label 17, heading 22, display 28 */
+    --text-h2: 1.375rem;
+    --text-h2--line-height: 1.1;
     --text-display: 1.75rem;
     --text-display--line-height: 2.125rem;
-    --text-display--letter-spacing: -0.02em;
-    --text-hero: 2.5rem;
+    --text-hero: 1.75rem;
     --text-hero--line-height: 1;
-    --text-hero--letter-spacing: -0.02em;
     --ease-out-soft: cubic-bezier(0.2, 0, 0, 1);
     --animate-screen-in: screen-in 200ms var(--ease-out-soft);
     --animate-screen-back: screen-back 200ms var(--ease-out-soft);
     --animate-pop: pop 180ms var(--ease-out-soft);
     --animate-fade-in: fade-in 200ms var(--ease-out-soft);
     --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
+    --font-sans: var(--body);
+    --font-mono: var(--mono);
+    /* shadcn's colour names, mapped onto the DLS tokens.
+       Careful: the DLS --muted is a text colour, so it is shadcn's muted-foreground. */
+    --color-ring: var(--ink);
+    --color-input: var(--ink);
+    --color-border: var(--ink);
+    --color-destructive: var(--ink);
+    --color-accent-foreground: var(--ink);
+    --color-accent: var(--paper);
+    --color-muted-foreground: var(--muted);
+    --color-muted: var(--paper);
+    --color-secondary-foreground: var(--ink);
+    --color-secondary: var(--card);
+    --color-primary-foreground: var(--card);
+    --color-primary: var(--ink);
+    --color-popover-foreground: var(--ink);
+    --color-popover: var(--card);
+    --color-card-foreground: var(--ink);
     --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+    --color-foreground: var(--ink);
+    --color-background: var(--paper);
+    /* chip 5, input and banner 8, card and row 10, panel 12, button and pill 22 */
+    --radius-sm: 5px;
+    --radius-md: 8px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
+    --radius-2xl: 12px;
+    --radius-3xl: 12px;
+    --radius-4xl: 22px;
 }
 
 :root {
-    color-scheme: light; /* light only, even when the phone is in dark mode */
-    --background: oklch(0.967 0.003 264.5);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    /* One accent only: the main action, done, links. 5.3:1 on white (AA) */
-    --primary: oklch(0.53 0.16 250);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.955 0.004 264.5);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.967 0.003 264.5);
-    --muted-foreground: oklch(0.5 0.015 260);
-    --accent: oklch(0.955 0.004 264.5);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.93 0.004 264);
-    --input: oklch(0.9 0.006 264);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.875rem;
-    /* Pain: 0-3 ok, 4-6 hold or back off, 7-10 stop. Always shown with the number. */
-    --pain-low: oklch(0.52 0.14 150);
-    --pain-low-foreground: oklch(0.985 0 0);
-    --pain-mid: oklch(0.769 0.165 70.1);
-    --pain-mid-foreground: oklch(0.205 0 0);
-    --pain-high: oklch(0.577 0.215 27.3);
-    --pain-high-foreground: oklch(0.985 0 0);
-    /* Session status: done is the accent; partly is the same colour, half filled (shape,
-       not a paler colour); skipped is a neutral grey */
-    --status-done: var(--primary);
-    --status-partial: var(--primary);
-    --status-skipped: oklch(0.6 0 0);
-    /* Exercise figures (src/exercises/): flat-colour figure. --fig-panel = background behind the figure */
-    --fig-accent: var(--primary);
-    --fig-panel: var(--muted);
-    --fig-skin: #e3ac86;
-    --fig-hair: #3b2b23;
-    --fig-shirt: #6a7d95;
-    --fig-shorts: #2b3443;
-    --fig-shoe: #22262d;
-    --fig-prop: #9aa1ab;
-    --fig-prop-fill: #cdd2d9;
-    --fig-ball: #f0c440;
-    --fig-band: #2a9a70;
-    --fig-towel: #c3c9d1;
-    --fig-inset: #e3e7ed;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    /* The Fontsource names of the DLS fonts */
+    --body: "Familjen Grotesk Variable", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono Variable", Consolas, monospace;
+    /* What the toasts read directly */
+    --popover: var(--card);
+    --popover-foreground: var(--ink);
+    --border: var(--ink);
+    /* Exercise figures (src/exercises/): flat, in the DLS's neutrals, so no colour reads as
+       a status. --fig-panel = background behind the figure */
+    --fig-accent: var(--ink);
+    --fig-panel: var(--paper);
+    --fig-skin: #dcc2a6;
+    --fig-hair: #16140f;
+    --fig-shirt: #5f5a4d;
+    --fig-shorts: #2a2925;
+    --fig-shoe: #16140f;
+    --fig-prop: #5f5a4d;
+    --fig-prop-fill: #cfc9b8;
+    --fig-ball: #cfc9b8;
+    --fig-band: #2a2925;
+    --fig-towel: #cfc9b8;
+    --fig-inset: #e6e1d3;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--ink);
     }
   body {
-    @apply bg-background text-foreground;
+    font-weight: 500;
     }
   button:not(:disabled), [role="button"]:not(:disabled) {
     cursor: pointer;
     }
-  /* A visible focus ring for keyboard users, on every control */
-  :focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
+  /* A button that is really a row inside a card, or a tab: none of the DLS button's look */
+  button.plain {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-weight: inherit;
     }
-  /* Numbers line up in columns */
+  /* A chip keeps its own ink, whatever the text around it */
+  .chip {
+    color: var(--ink);
+    white-space: nowrap;
+    }
+  .chip.poor {
+    color: var(--card);
+    }
+  /* Numbers are mono, and line up in columns */
   .tabular-nums, time {
+    font-family: var(--mono);
     font-variant-numeric: tabular-nums;
     }
   html {
@@ -176,8 +141,15 @@
   @keyframes pop { from { opacity: 0.6; } }
 }
 
-/* "Partly": half filled, so it reads by shape as well as colour */
+/* "Partly": half filled, so it reads by shape */
 .status-half {
-  background: linear-gradient(90deg, var(--status-partial) 50%, transparent 50%);
-  box-shadow: inset 0 0 0 1.5px var(--status-partial);
+  background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);
+}
+
+/* The toasts: an outlined box with a hard shadow */
+.cn-toast {
+  border: var(--line) !important;
+  box-shadow: var(--shadow-m) !important;
+  font-family: var(--body) !important;
+  font-weight: 700 !important;
 }

@@ -82,7 +82,7 @@ function LogForm({
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-md flex-col">
       <DrawerHeader className="text-left">
-        <DrawerTitle className="text-xl">{session.title}</DrawerTitle>
+        <DrawerTitle className="text-h2">{session.title}</DrawerTitle>
         <DrawerDescription>Com’è andata?</DrawerDescription>
       </DrawerHeader>
 
@@ -118,7 +118,7 @@ function LogForm({
           (noteOpen ? (
             <div className="flex flex-col gap-2">
               <label htmlFor="log-note" className="text-sm font-medium">
-                Nota <span className="font-normal text-muted-foreground">· facoltativa</span>
+                Nota <span className="font-medium text-muted-foreground">· facoltativa</span>
               </label>
               <Textarea
                 id="log-note"

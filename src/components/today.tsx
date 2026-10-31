@@ -166,7 +166,7 @@ function Day({
                   {' · '}
                   <button
                     type="button"
-                    className="-my-3 inline-block py-3 font-medium text-primary underline-offset-4 hover:underline"
+                    className="plain -my-3 inline-block py-3 font-bold text-foreground underline underline-offset-4"
                     onClick={() => onDate(today)}
                   >
                     Torna a oggi
@@ -179,7 +179,7 @@ function Day({
             <Button
               variant="ghost"
               size="icon"
-              className="size-11 rounded-full text-muted-foreground"
+              className="size-11"
               aria-label="Settimana precedente"
               onClick={() => onWeek(-1)}
             >
@@ -188,7 +188,7 @@ function Day({
             <Button
               variant="ghost"
               size="icon"
-              className="size-11 rounded-full text-muted-foreground"
+              className="size-11"
               aria-label="Settimana successiva"
               onClick={() => onWeek(1)}
             >

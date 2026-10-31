@@ -1,10 +1,12 @@
 // The demo's backend (swapped in for src/data/backend.ts by `vite --mode demo`):
 // the in-memory database of src/demo/state.ts, and the demo bar.
+import { lazy } from 'react'
 import type { Backend } from '@/data/api'
 import { createMemoryBackend } from '@/demo/memory'
 import { demo } from '@/demo/state'
 
 export { DemoBar } from '@/demo/demo-bar'
+export const DemoLibrary = lazy(() => import('@/demo/library'))
 
 // ?latency=600 slows every read and write down, to see loading states
 const latency = Number(new URLSearchParams(location.search).get('latency') ?? 0) || 0

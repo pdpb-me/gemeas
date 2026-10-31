@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { CalendarArrowUpIcon, ChevronRightIcon, InfoIcon, PlayIcon, TriangleAlertIcon } from 'lucide-react'
+import { CalendarArrowUpIcon, InfoIcon, PlayIcon, TriangleAlertIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { ExerciseFigure } from '@/components/exercise-figure'
 import { LogSheet } from '@/components/log-sheet'
 import { LogSummary } from '@/components/log-summary'
 import { MoveSheet } from '@/components/move-sheet'
 import { ScreenHeader } from '@/components/screen-header'
-import { StatusMark } from '@/components/status-mark'
+import { RowArrow, StatusMark } from '@/components/status-mark'
 import { TestCard } from '@/components/test-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -40,7 +40,7 @@ function VideoRow({ video }: { video: Video }) {
       rel="noreferrer"
       className="flex min-h-20 items-center gap-3 border-t py-3 first:border-t-0"
     >
-      <span className="relative block h-[54px] w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
+      <span className="relative block h-[54px] w-24 shrink-0 overflow-hidden rounded-lg border bg-muted">
         {/* mqdefault is 16:9 with no black bars; hidden if it can't load (offline) */}
         <img
           src={`https://i.ytimg.com/vi/${video.yt_id}/mqdefault.jpg`}
@@ -50,19 +50,19 @@ function VideoRow({ video }: { video: Video }) {
           onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
         />
         <span className="absolute inset-0 flex items-center justify-center">
-          <span className="flex size-7 items-center justify-center rounded-full bg-background/90 text-foreground">
+          <span className="flex size-7 items-center justify-center rounded-sm border-2 bg-card text-foreground">
             <PlayIcon className="ml-0.5 size-3.5 fill-current" />
           </span>
         </span>
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-base font-semibold">{video.title}</span>
+        <span className="text-[17px] font-bold">{video.title}</span>
         <span className="text-sm text-muted-foreground">
           Video{video.duration_s != null && ` · ${duration(video.duration_s)}`} · YouTube
         </span>
         {video.flags && (
           <span className="flex gap-1.5 text-sm">
-            <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-pain-mid" aria-hidden />
+            <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-foreground" aria-hidden />
             {video.flags}
           </span>
         )}
@@ -117,7 +117,7 @@ export function SessionScreen({
           back={relativeDay(session.date, today)}
           onBack={onBack}
           action={
-            <Button variant="ghost" className="h-11 rounded-full px-3 text-base font-normal" onClick={() => setMoveOpen(true)}>
+            <Button variant="ghost" className="h-11 px-3 text-base" onClick={() => setMoveOpen(true)}>
               <CalendarArrowUpIcon className="size-5" />
               Sposta
             </Button>
@@ -136,7 +136,7 @@ export function SessionScreen({
 
       <div className="flex flex-col gap-3 p-4">
         {area && !session.log && session.date >= today && todayFoot != null && todayFoot >= 5 && (
-          <p className="flex gap-2 rounded-xl bg-card px-4 py-3 text-sm ring-1 ring-foreground/10">
+          <p className="banner flex gap-2">
             <InfoIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <span>
               Stamattina il piede era {painLabel(todayFoot)}.{' '}
@@ -169,16 +169,16 @@ export function SessionScreen({
                   key={`${slug}-${i}`}
                   type="button"
                   onClick={() => onOpenExercise(i)}
-                  className="flex min-h-21 items-center gap-3 border-t py-3 text-left first:border-t-0"
+                  className="plain flex min-h-21 items-center gap-3 border-t py-3 text-left first:border-t-0"
                 >
-                  <span className="block h-[68px] w-24 shrink-0 overflow-hidden rounded-lg bg-muted p-1">
+                  <span className="block h-[68px] w-24 shrink-0 overflow-hidden rounded-lg border bg-muted p-1">
                     <ExerciseFigure slug={slug} contain className="size-full" />
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="text-base font-semibold">{ex.name}</span>
+                    <span className="text-[17px] font-bold">{ex.name}</span>
                     {ex.tempo && <span className="text-sm text-muted-foreground">{ex.tempo}</span>}
                   </span>
-                  <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <RowArrow />
                 </button>
               )
             })}
@@ -206,14 +206,14 @@ export function SessionScreen({
               <button
                 type="button"
                 onClick={() => setLogOpen(true)}
-                className="flex min-h-14 items-center gap-3 rounded-xl bg-muted px-3 py-2 text-left"
+                className="row min-h-14 justify-start gap-3 px-3 py-2"
                 aria-label={`Modifica la registrazione di ${session.title}`}
               >
                 <StatusMark status={session.log.status} />
                 <span className="min-w-0 flex-1">
                   <LogSummary session={session} />
                 </span>
-                <span className="text-sm font-medium text-primary">Modifica</span>
+                <span className="text-sm font-bold underline underline-offset-4">Modifica</span>
               </button>
             ) : (
               <div className="grid grid-cols-3 gap-2" role="group" aria-label="Quanto ne hai fatto?">
@@ -221,7 +221,7 @@ export function SessionScreen({
                   <Button
                     key={s.value}
                     variant={s.value === 'done' ? 'default' : 'outline'}
-                    className="h-12 rounded-full text-base font-semibold"
+                    className="h-12 rounded-full text-[17px] font-bold"
                     onClick={() => log(s.value)}
                   >
                     {s.label}

@@ -1,0 +1,82 @@
+/* Neo-brutalist DLS: warm paper, ink outlines, hard shadows. Always light.
+   Load the fonts first:
+   https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap */
+
+:root {
+  color-scheme: light;
+  --paper: #f2eee3; --card: #fbf9f2; --ink: #16140f; --muted: #5f5a4d; --panel: #2a2925;
+  /* Status only: never use these for decoration or selection */
+  --good: #a9d18e; --fair: #f2c14e; --poor: #16140f;
+  --body: "Familjen Grotesk", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, monospace;
+  --line: 2px solid var(--ink);
+  --shadow-s: 2px 2px 0 var(--ink);
+  --shadow-m: 4px 4px 0 var(--ink);
+  --shadow-l: 5px 5px 0 var(--ink);
+  --checker: repeating-conic-gradient(var(--ink) 0 25%, var(--fair) 0 50%) 0 0 / 8px 8px;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.4 var(--body); }
+h1, h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 700; line-height: 1.1; }
+h1 { font-size: 28px; }
+h2 { font-size: 22px; }
+h1::before, h2::before { content: ""; width: 10px; height: 10px; background: var(--ink); flex: none; }
+button, select, input { font: inherit; color: inherit; }
+button, select { background: var(--card); border: var(--line); border-radius: 22px; min-height: 44px; padding: 0 14px; font-weight: 700; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.muted { color: var(--muted); font-size: 14px; }
+
+/* Status colours, shared by chips, bars and legends */
+.good { background: var(--good); }
+.fair { background: var(--fair); }
+.poor { background: var(--poor); color: var(--card); }
+
+.chip { font-size: 13px; font-weight: 700; padding: 1px 8px; border: var(--line); border-radius: 5px; }
+
+.status { font: 500 13px var(--mono); display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; background: var(--ink); }
+.status.stale .dot { background: transparent; border: var(--line); }
+
+.box { background: var(--card); border: var(--line); border-radius: 10px; padding: 14px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.panel { background: var(--card); border: var(--line); border-radius: 12px; box-shadow: var(--shadow-m); padding: 24px; }
+.panel input { width: 100%; min-height: 46px; padding: 0 12px; border: var(--line); border-radius: 8px; background: var(--paper); margin: 12px 0; }
+.panel button { width: 100%; background: var(--ink); color: var(--card); }
+.banner { background: var(--card); border: var(--line); border-radius: 8px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
+
+/* Dark hero block with a checker corner */
+.feature { position: relative; background: var(--panel); border: var(--line); border-radius: 12px; box-shadow: var(--shadow-m); padding: 20px; display: flex; justify-content: center; }
+.feature::after { content: ""; position: absolute; top: 0; right: 0; width: 72px; height: 12px; border-top-right-radius: 10px; background: var(--checker); }
+
+/* Selectable row: the selected one gets a bigger shadow and an open arrow, not a colour */
+.rows { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 62px; padding: 8px 12px; text-align: left; border-radius: 10px; box-shadow: var(--shadow-s); font-weight: 500; }
+.row.on { box-shadow: var(--shadow-l); }
+.row .text { min-width: 0; }
+.row .head { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 8px; }
+.row .label { font-size: 17px; font-weight: 700; }
+.row .sub { display: block; font: 400 13px var(--mono); margin-top: 3px; }
+.row .end { display: flex; align-items: center; gap: 8px; flex: none; }
+.row .value { font: 500 28px/1 var(--mono); letter-spacing: -0.02em; white-space: nowrap; }
+.row .mark { font: 700 16px var(--mono); width: 12px; }
+
+/* Segmented pills */
+.ranges { display: flex; gap: 6px; flex-wrap: wrap; }
+.ranges button { min-height: 40px; padding: 0 12px; font-size: 14px; }
+.ranges button.on { background: var(--ink); color: var(--card); }
+
+/* Status bar chart: flat bars coloured by status, dashed limit lines, no grid */
+.readout { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font: 500 14px var(--mono); min-height: 20px; }
+.readout b { font-weight: 700; }
+.plot-wrap { display: flex; gap: 6px; min-width: 0; --plot: 180px; }
+.y-axis { display: flex; flex-direction: column; justify-content: space-between; height: var(--plot); width: 40px; flex: none; text-align: right; font: 400 12px/1 var(--mono); color: var(--muted); }
+.plot { position: relative; flex: 1 1 0; min-width: 0; height: var(--plot); border-bottom: var(--line); display: flex; align-items: flex-end; gap: 2px; }
+.bar { flex: 1 1 0; min-width: 0; min-height: 0; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent; display: flex; align-items: flex-end; }
+.bar span { display: block; width: 100%; }
+.bar.picked span { outline: var(--line); }
+.limit { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--ink); pointer-events: none; }
+.limit span { position: absolute; right: 0; top: -15px; font: 500 11px var(--mono); background: var(--card); padding: 0 2px; }
+.x-axis { display: flex; justify-content: space-between; padding-left: 46px; font: 400 12px var(--mono); color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 14px; font-weight: 700; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 12px; height: 12px; border: var(--line); }

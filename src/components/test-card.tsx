@@ -58,7 +58,7 @@ export function TestCard({
   return (
     <Card className="gap-4 px-4 py-4">
       <div className="flex flex-col gap-0.5">
-        <h2 className="text-base font-semibold">Il tuo risultato</h2>
+        <h2>Il tuo risultato</h2>
         <p className="text-sm text-muted-foreground">Ripetizioni pulite su una gamba, prima la sinistra. Fermati se il piede supera Lieve.</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -77,7 +77,7 @@ export function TestCard({
               onChange={(e) => setDraft((d) => ({ ...d, [side]: e.target.value }))}
               onBlur={() => commit(side)}
               onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-              className="h-12 text-xl font-semibold tabular-nums"
+              className="h-12 text-xl font-bold tabular-nums"
             />
             {invalid[side] && <span className="text-xs font-medium text-destructive">Non salvato: un numero intero, da 0 a 200</span>}
             <span className="text-xs text-muted-foreground">
@@ -105,23 +105,23 @@ export function TestHistory({ days, open, onOpenChange }: { days: TestDay[]; ope
       <DrawerContent>
         <div className="mx-auto flex min-h-0 w-full max-w-md flex-col">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="text-xl">Test di sollevamento tallone</DrawerTitle>
+            <DrawerTitle className="text-h2">Test di sollevamento tallone</DrawerTitle>
             <DrawerDescription>Ripetizioni pulite su una gamba. 100% vuol dire che i due lati sono uguali.</DrawerDescription>
           </DrawerHeader>
           <ol className="flex min-h-0 flex-col gap-4 overflow-y-auto px-4">
             {[...days].reverse().map((d) => (
               <li key={d.date} className="flex flex-col gap-1.5">
                 <div className="flex items-baseline justify-between">
-                  <span className="text-sm font-semibold">{dayMonth(d.date)}</span>
+                  <span className="text-sm font-bold">{dayMonth(d.date)}</span>
                   {rightOfLeft(d) != null && <span className="text-sm text-muted-foreground">Destra al {rightOfLeft(d)}% della sinistra</span>}
                 </div>
                 {(['L', 'R'] as const).map((side) => (
                   <div key={side} className="flex items-center gap-2 text-sm">
                     <span className="w-14 text-muted-foreground">{side === 'L' ? 'Sinistra' : 'Destra'}</span>
-                    <span className="h-2 flex-1 rounded-full bg-muted">
-                      <span className="block h-2 rounded-full bg-foreground/70" style={{ width: `${((d[side] ?? 0) / max) * 100}%` }} />
+                    <span className="h-3 flex-1 border-b-2">
+                      <span className="block h-full bg-muted-foreground" style={{ width: `${((d[side] ?? 0) / max) * 100}%` }} />
                     </span>
-                    <span className="w-8 text-right font-semibold tabular-nums">{d[side] ?? '–'}</span>
+                    <span className="w-8 text-right font-bold tabular-nums">{d[side] ?? '–'}</span>
                   </div>
                 ))}
               </li>

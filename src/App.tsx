@@ -1,21 +1,23 @@
-import { useState } from 'react'
-import { ChartLineIcon, SunIcon } from 'lucide-react'
+import { Suspense, useState } from 'react'
+import { ChartLineIcon, DumbbellIcon, SunIcon } from 'lucide-react'
 import { Login } from '@/components/login'
 import { Progress } from '@/components/progress'
+import { CardSkeleton } from '@/components/states'
 import { Today } from '@/components/today'
-import { DemoBar } from '@/data/backend'
+import { DemoBar, DemoLibrary } from '@/data/backend'
 import { useSession } from '@/hooks/use-session'
 import { cn } from '@/lib/utils'
 
 const TABS = [
   { id: 'today', label: 'Oggi', icon: SunIcon },
   { id: 'progress', label: 'Progressi', icon: ChartLineIcon },
-] as const
-type Tab = (typeof TABS)[number]['id']
+  // Only the demo has the video list, for now
+  ...(DemoLibrary ? [{ id: 'library', label: 'Esercizi', icon: DumbbellIcon }] : []),
+]
 
 function App() {
   const signedIn = useSession()
-  const [tab, setTab] = useState<Tab>('today')
+  const [tab, setTab] = useState('today')
   // a session or exercise screen has its own buttons at the bottom: hide the tab bar there
   const [deep, setDeep] = useState(false)
   if (signedIn === undefined) return null // still checking, a split second
@@ -25,10 +27,16 @@ function App() {
       {DemoBar && <DemoBar />}
       {/* room for the bottom bar */}
       <div className={deep ? undefined : 'pb-20'}>
-        {tab === 'today' ? <Today onDeepChange={setDeep} /> : <Progress onDeepChange={setDeep} />}
+        {tab === 'today' && <Today onDeepChange={setDeep} />}
+        {tab === 'progress' && <Progress onDeepChange={setDeep} />}
+        {tab === 'library' && DemoLibrary && (
+          <Suspense fallback={<CardSkeleton className="m-4" />}>
+            <DemoLibrary />
+          </Suspense>
+        )}
       </div>
       {!deep && (
-        <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur" aria-label="Principale">
+        <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-card pb-[env(safe-area-inset-bottom)]" aria-label="Principale">
           <div className="mx-auto flex max-w-md">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
@@ -41,12 +49,12 @@ function App() {
                 }}
                 aria-current={tab === id ? 'page' : undefined}
                 className={cn(
-                  'flex h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium',
+                  'plain flex h-16 flex-1 flex-col items-center justify-center gap-1 text-xs font-bold',
                   tab === id ? 'text-foreground' : 'text-muted-foreground',
                 )}
               >
-                <span className={cn('flex h-7 w-14 items-center justify-center rounded-full transition-colors', tab === id && 'bg-muted')}>
-                  <Icon className="size-5" strokeWidth={tab === id ? 2.4 : 2} />
+                <span className={cn('flex h-7 w-14 items-center justify-center rounded-4xl', tab === id && 'bg-foreground text-card')}>
+                  <Icon className="size-5" strokeWidth={2.25} />
                 </span>
                 {label}
               </button>

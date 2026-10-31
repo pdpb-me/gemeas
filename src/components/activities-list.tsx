@@ -26,7 +26,7 @@ export function Activities({ today }: { today: string }) {
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 text-muted-foreground"
+          className="size-11"
           aria-label="Mese precedente"
           disabled={oldestMonth == null || month <= oldestMonth}
           onClick={() => setMonth(shiftMonth(month, -1))}
@@ -34,7 +34,7 @@ export function Activities({ today }: { today: string }) {
           <ChevronLeftIcon className="size-5" />
         </Button>
         <span className="flex flex-col items-center">
-          <span className="text-base font-semibold">{monthName(month)}</span>
+          <span className="text-[17px] font-bold">{monthName(month)}</span>
           <span className="text-xs text-muted-foreground">
             {items === undefined ? ' ' : `${plural(items.length, 'attività', 'attività')} · ${duration(total)}`}
           </span>
@@ -42,7 +42,7 @@ export function Activities({ today }: { today: string }) {
         <Button
           variant="ghost"
           size="icon"
-          className="size-11 text-muted-foreground"
+          className="size-11"
           aria-label="Mese successivo"
           disabled={month >= thisMonth}
           onClick={() => setMonth(shiftMonth(month, 1))}
@@ -90,7 +90,7 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
         return (
           <section key={monday} className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between px-1">
-              <h2 className="text-base font-semibold">{monday === thisMonday ? 'Questa settimana' : `Settimana del ${dayMonth(monday)}`}</h2>
+              <h2>{monday === thisMonday ? 'Questa settimana' : `Settimana del ${dayMonth(monday)}`}</h2>
               <span className="text-sm text-muted-foreground">{[duration(time), metres ? km(metres) : null].filter(Boolean).join(' · ')}</span>
             </div>
             <Card className="gap-0 py-0">
@@ -102,14 +102,14 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
                     const Icon = sport.icon
                     return (
                       <div key={a.id} className="flex min-h-14 items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-foreground/70">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border">
                           <Icon className="size-[18px]" aria-hidden />
                         </span>
                         <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-base font-semibold">{sport.label}</span>
+                          <span className="text-[17px] font-bold">{sport.label}</span>
                           {a.distance_m ? <span className="truncate text-xs text-muted-foreground">{km(a.distance_m)}</span> : null}
                         </span>
-                        <span className="text-base font-semibold tabular-nums">{duration(a.duration_s)}</span>
+                        <span className="text-[17px] font-bold tabular-nums">{duration(a.duration_s)}</span>
                       </div>
                     )
                   })}

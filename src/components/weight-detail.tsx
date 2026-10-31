@@ -43,12 +43,12 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col">
             <span className="text-sm text-muted-foreground">Media, {range.text}</span>
-            <span className="text-hero font-semibold tabular-nums">{now ? decimal(now.kg) : '–'}</span>
+            <span className="font-mono text-hero font-medium tabular-nums">{now ? decimal(now.kg) : '–'}</span>
             <span className="text-sm text-muted-foreground">{now ? `kg · ${plural(now.n, 'valore', 'valori')}` : 'Nessun valore'}</span>
           </div>
           <div className="flex flex-col items-end text-right">
             <span className="text-sm text-muted-foreground">{last ? `Ultimo, ${dayMonth(last.date)}` : 'Ancora nessun valore'}</span>
-            <span className="text-xl font-semibold tabular-nums">{last ? kgText(last.kg) : '–'}</span>
+            <span className="text-h2 font-medium tabular-nums">{last ? kgText(last.kg) : '–'}</span>
           </div>
         </div>
 
@@ -58,8 +58,7 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
           <svg viewBox="0 0 350 225" className="w-full" role="img" aria-label={`Peso, ${range.text}`}>
             {gridKg.map((kg) => (
               <g key={kg}>
-                <line x1={X0 - 4} x2={X1 + 4} y1={y(kg)} y2={y(kg)} className="stroke-border" strokeDasharray="3 3" />
-                <text x={X1 + 10} y={y(kg) + 4} className="fill-muted-foreground text-[12px]">
+                <text x={X1 + 10} y={y(kg) + 4} className="fill-muted-foreground font-mono text-[12px]">
                   {kg % 1 === 0 ? kg : decimal(kg)}
                 </text>
               </g>
@@ -68,13 +67,19 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
               <polyline
                 points={weeks.map((w) => `${x(w.date).toFixed(1)},${y(w.kg).toFixed(1)}`).join(' ')}
                 fill="none"
-                className="stroke-foreground/80"
+                className="stroke-foreground"
                 strokeWidth="2.5"
-                strokeLinejoin="round"
               />
             )}
             {entries.map((e) => (
-              <circle key={e.date} cx={x(e.date)} cy={y(e.kg)} r={range.days > 28 ? 2.4 : 4} className="fill-foreground/30" />
+              <rect
+                key={e.date}
+                x={x(e.date) - (range.days > 28 ? 2 : 3.5)}
+                y={y(e.kg) - (range.days > 28 ? 2 : 3.5)}
+                width={range.days > 28 ? 4 : 7}
+                height={range.days > 28 ? 4 : 7}
+                className="fill-muted-foreground"
+              />
             ))}
             {[0, 0.5, 1].map((f) => {
               const d = addDays(from, Math.round(f * (range.days - 1)))
@@ -84,7 +89,7 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
                   x={x(d)}
                   y="220"
                   textAnchor={f === 0 ? 'start' : f === 1 ? 'end' : 'middle'}
-                  className="fill-muted-foreground text-[12px]"
+                  className="fill-muted-foreground font-mono text-[12px]"
                 >
                   {dayMonth(d)}
                 </text>
@@ -92,13 +97,13 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
             })}
           </svg>
         )}
-        <div className="flex gap-4 text-xs text-muted-foreground">
+        <div className="flex gap-4 text-xs font-bold text-muted-foreground">
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-foreground/30" aria-hidden />
+            <span className="size-2 bg-muted-foreground" aria-hidden />
             Ogni valore
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-0.5 w-4 rounded-full bg-foreground/80" aria-hidden />
+            <span className="h-0.5 w-4 bg-foreground" aria-hidden />
             Media settimanale
           </span>
         </div>

@@ -72,7 +72,7 @@ function MoveForm({
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-md flex-col">
       <DrawerHeader className="text-left">
-        <DrawerTitle className="text-xl">Sposta “{session.title}”</DrawerTitle>
+        <DrawerTitle className="text-h2">Sposta “{session.title}”</DrawerTitle>
         <DrawerDescription>Quello che hai già registrato si sposta insieme.</DrawerDescription>
       </DrawerHeader>
       <div className="flex flex-col gap-5 overflow-y-auto px-4">
@@ -86,22 +86,22 @@ function MoveForm({
                 onClick={() => setDate(d)}
                 aria-pressed={d === date}
                 className={cn(
-                  'flex h-14 flex-col items-center justify-center rounded-lg border text-sm',
-                  d === date ? 'border-foreground bg-foreground font-semibold text-background' : 'bg-card',
+                  'flex h-14 flex-col items-center justify-center rounded-lg border px-0 text-sm',
+                  d === date ? 'bg-foreground text-card' : 'bg-card',
                 )}
               >
                 <span className="text-xs">{d === today ? 'Oggi' : d === addDays(today, 1) ? 'Domani' : weekdayShort(d)}</span>
-                <span className="text-base font-semibold tabular-nums">{Number(d.slice(8))}</span>
+                <span className="text-base font-medium tabular-nums">{Number(d.slice(8))}</span>
               </button>
             ))}
             <label
               className={cn(
                 'relative flex h-14 flex-col items-center justify-center rounded-lg border text-sm',
-                !chips.includes(date) ? 'border-foreground bg-foreground font-semibold text-background' : 'bg-card',
+                !chips.includes(date) ? 'bg-foreground text-card' : 'bg-card',
               )}
             >
               <span className="text-xs">{!chips.includes(date) ? weekdayShort(date) : 'Altro'}</span>
-              <span className="text-base font-semibold">{!chips.includes(date) ? Number(date.slice(8)) : '…'}</span>
+              <span className="text-[17px] font-bold">{!chips.includes(date) ? Number(date.slice(8)) : '…'}</span>
               <Input
                 type="date"
                 value={date}
@@ -123,7 +123,7 @@ function MoveForm({
           onChange={setSlot}
         />
         {otherHeavy && (
-          <p className="rounded-lg bg-muted px-3 py-2.5 text-sm">
+          <p className="banner">
             C’è un altro allenamento impegnativo {dayLabel(otherHeavy[0])}. Se serve, il coach può riequilibrare la settimana.
           </p>
         )}

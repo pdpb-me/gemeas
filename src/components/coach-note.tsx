@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useBackCloses } from '@/hooks/use-back-stack'
-import { ChevronRightIcon, MessageSquareTextIcon } from 'lucide-react'
+import { MessageSquareTextIcon } from 'lucide-react'
+import { RowArrow } from '@/components/status-mark'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import type { Review } from '@/data/types'
 import { dayMonth } from '@/lib/format'
@@ -29,19 +29,19 @@ export function CoachNoteSheet({ review, open, onOpenChange }: { review: Review;
       <DrawerContent>
         <div className="mx-auto flex min-h-0 w-full max-w-md flex-col">
           <DrawerHeader className="text-left">
-            <DrawerTitle className="text-xl">Dal tuo coach</DrawerTitle>
+            <DrawerTitle className="text-h2">Dal tuo coach</DrawerTitle>
             <DrawerDescription>Settimana del {dayMonth(review.week_start)}</DrawerDescription>
           </DrawerHeader>
           <div className="flex min-h-0 flex-col gap-5 overflow-y-auto px-4">
             {review.decisions && (
               <section className="flex flex-col gap-1.5">
-                <h3 className="text-sm font-medium text-muted-foreground">Questa settimana</h3>
+                <h3 className="text-sm font-bold text-muted-foreground">Questa settimana</h3>
                 <Text text={review.decisions} />
               </section>
             )}
             {review.summary && (
               <section className="flex flex-col gap-1.5">
-                <h3 className="text-sm font-medium text-muted-foreground">La settimana scorsa</h3>
+                <h3 className="text-sm font-bold text-muted-foreground">La settimana scorsa</h3>
                 <Text text={review.summary} />
               </section>
             )}
@@ -71,25 +71,25 @@ export function CoachNote({ review }: { review: Review }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex min-h-12 items-center gap-3 rounded-xl bg-card px-4 text-left ring-1 ring-foreground/10"
+          className="row min-h-12 justify-start gap-3 px-4"
         >
           <MessageSquareTextIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           <span className="flex-1 text-sm">Nota del coach per questa settimana</span>
-          <ChevronRightIcon className="size-4 text-muted-foreground" aria-hidden />
+          <RowArrow />
         </button>
         <CoachNoteSheet review={review} open={open} onOpenChange={setOpen} />
       </>
     )
 
   return (
-    <Card className="animate-fade-in gap-2 px-4 pt-3 pb-2">
-      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+    <div className="feature animate-fade-in flex-col justify-start gap-2 text-card">
+      <div className="flex items-center gap-2 pr-16 text-sm font-bold">
         <MessageSquareTextIcon className="size-4" aria-hidden />
         Dal tuo coach · settimana del {dayMonth(review.week_start)}
       </div>
       <p className="line-clamp-3 text-sm leading-relaxed">{lead}</p>
-      <div className="-mb-1 flex justify-end gap-1">
-        <Button variant="ghost" className="h-11 rounded-full px-4 text-primary" onClick={() => setOpen(true)}>
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" className="h-11 px-4" onClick={() => setOpen(true)}>
           Leggi tutto
         </Button>
         <Button
@@ -104,6 +104,6 @@ export function CoachNote({ review }: { review: Review }) {
         </Button>
       </div>
       <CoachNoteSheet review={review} open={open} onOpenChange={setOpen} />
-    </Card>
+    </div>
   )
 }

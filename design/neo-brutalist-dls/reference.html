@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Neo-brutalist DLS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="dls.css">
+<style>
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 28px; }
+  section { display: flex; flex-direction: column; gap: 12px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .line { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+  .swatch { border: var(--line); border-radius: 10px; overflow: hidden; background: var(--card); font: 400 12px var(--mono); }
+  .swatch i { display: block; height: 52px; border-bottom: var(--line); }
+  .swatch span { display: block; padding: 6px 8px; }
+  .feature p { color: var(--card); margin: 0; font-size: 22px; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Neo-brutalist DLS</h1>
+    <span class="status"><span class="dot"></span>Updated 3 min ago</span>
+  </header>
+
+  <section>
+    <h2>Colour</h2>
+    <div class="swatches">
+      <div class="swatch"><i style="background:var(--paper)"></i><span>paper #f2eee3</span></div>
+      <div class="swatch"><i style="background:var(--card)"></i><span>card #fbf9f2</span></div>
+      <div class="swatch"><i style="background:var(--ink)"></i><span>ink #16140f</span></div>
+      <div class="swatch"><i style="background:var(--muted)"></i><span>muted #5f5a4d</span></div>
+      <div class="swatch"><i style="background:var(--panel)"></i><span>panel #2a2925</span></div>
+      <div class="swatch"><i class="good"></i><span>good #a9d18e</span></div>
+      <div class="swatch"><i class="fair"></i><span>fair #f2c14e</span></div>
+      <div class="swatch"><i class="poor"></i><span>poor #16140f</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Controls</h2>
+    <div class="line"><button>Secondary</button><button style="background:var(--ink);color:var(--card)">Primary</button></div>
+    <div class="ranges"><button class="on">24 h</button><button>7 days</button><button>30 days</button><button>1 year</button></div>
+    <div class="line"><span class="chip good">Good</span><span class="chip fair">Fair</span><span class="chip poor">Poor</span></div>
+    <div class="line"><span class="status"><span class="dot"></span>Live</span><span class="status stale"><span class="dot"></span>Offline</span></div>
+  </section>
+
+  <section>
+    <h2>Rows</h2>
+    <div class="rows">
+      <button class="row on"><span class="text"><span class="head"><span class="label">Selected row</span><span class="chip good">Good</span></span><span class="sub">24 h: 410 – 1350</span></span><span class="end"><span class="value">471</span><span class="mark">▾</span></span></button>
+      <button class="row"><span class="text"><span class="head"><span class="label">Resting row</span><span class="chip fair">Fair</span></span><span class="sub">24 h: 20.4° – 23.6°</span></span><span class="end"><span class="value">22.1°</span><span class="mark">▸</span></span></button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Status bar chart</h2>
+    <div class="box">
+      <div class="readout"><span>Now</span><b>471 · Good</b></div>
+      <div class="plot-wrap">
+        <div class="y-axis"><span>1600</span><span>950</span><span>300</span></div>
+        <div class="plot" id="plot"></div>
+      </div>
+      <div class="x-axis"><span>24 h ago</span><span>12 h ago</span><span>Now</span></div>
+      <div class="legend"><span><i class="good"></i>Good</span><span><i class="fair"></i>Fair</span><span><i class="poor"></i>Poor</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Containers</h2>
+    <div class="feature"><p>Feature block</p></div>
+    <div class="banner">Banner: a message that needs attention.</div>
+    <div class="panel">
+      <h2>Panel</h2>
+      <input placeholder="name@example.com" aria-label="Example input">
+      <button>Primary action</button>
+    </div>
+  </section>
+</main>
+<script>
+// Sample data only, to show how the bars and limit lines are built
+const LO = 300, HI = 1600;
+const pct = (v) => (v - LO) / (HI - LO) * 100;
+let html = "";
+for (let i = 0; i < 40; i++) {
+  const v = i === 39 ? 471 : Math.max(430, 800 + Math.sin(i / 5.2 + 1) * 400 + Math.sin(i / 1.6) * 90);
+  const level = v < 800 ? "good" : v < 1200 ? "fair" : "poor";
+  html += `<div class="bar${i === 39 ? " picked" : ""}"><span class="${level}" style="height:${pct(v).toFixed(1)}%"></span></div>`;
+}
+for (const [v, text] of [[800, "Fair"], [1200, "Poor"]]) {
+  html += `<div class="limit" style="top:${(100 - pct(v)).toFixed(1)}%"><span>${text}</span></div>`;
+}
+document.getElementById("plot").innerHTML = html;
+</script>
+</body>
+</html>

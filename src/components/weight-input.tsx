@@ -30,7 +30,7 @@ export function WeightInput({ value, onSave }: { value: number | null; onSave: (
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor="morning-weight" className="text-sm font-medium">
-        Peso <span className="font-normal text-muted-foreground">· facoltativo</span>
+        Peso <span className="font-medium text-muted-foreground">· facoltativo</span>
       </Label>
       <div className="flex items-center gap-2">
         <Input

@@ -84,16 +84,16 @@ export function WeekStrip({
                 aria-current={on ? 'date' : undefined}
                 aria-label={`${longDate(iso)}${iso === today ? ' (oggi)' : ''}: ${summary}`}
                 className={cn(
-                  'flex h-14 flex-col items-center justify-center gap-0.5 rounded-xl transition-colors',
-                  on ? 'bg-foreground text-background' : 'hover:bg-muted',
-                  !on && iso === today && 'ring-1 ring-foreground/30 ring-inset',
+                  'plain flex h-14 flex-col items-center justify-center gap-0.5 rounded-xl',
+                  on && 'bg-foreground text-card',
+                  !on && iso === today && 'border',
                 )}
               >
-                <span className={cn('text-xs font-medium', !on && 'text-muted-foreground')}>{weekdayLetter(iso)}</span>
-                <span className={cn('text-base leading-none tabular-nums', on || iso === today ? 'font-semibold' : 'font-medium')}>
+                <span className={cn('text-xs font-bold', !on && 'text-muted-foreground')}>{weekdayLetter(iso)}</span>
+                <span className="text-base leading-none font-medium tabular-nums">
                   {Number(iso.slice(8))}
                 </span>
-                <span className="mt-1 flex h-1.5 gap-0.5">
+                <span className="mt-1 flex h-2 gap-0.5">
                   {sessions.slice(0, 4).map((s) => (
                     <StatusDot key={s.id} status={s.status} past={past} inverted={on} />
                   ))}

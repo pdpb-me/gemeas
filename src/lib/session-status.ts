@@ -16,9 +16,9 @@ export const statusLabel = (s: string) => STATUSES.find((x) => x.value === s)?.l
 export const countsAsDone = happened
 
 export const PAIN_DOT: Record<PainBand, string> = {
-  low: 'bg-pain-low',
-  mid: 'bg-pain-mid',
-  high: 'bg-pain-high',
+  low: 'good',
+  mid: 'fair',
+  high: 'poor',
 }
 
 // The pain score asked during this session, if any
