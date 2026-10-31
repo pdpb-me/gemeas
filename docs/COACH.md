@@ -21,7 +21,7 @@ This file is public, so it holds no names, user ids or health details. Those are
 
 - The **personal trainer's lessons** come first: other days are planned around them, and the lessons can be cancelled or moved. Write them with kind `trainer`.
 - She can move a single session herself in the app; its logs move with it. A session on another day than planned is a deliberate move, not an error. For bigger changes she or the owner asks you.
-- You can't see videos, and nobody has watched them yet (see `videos`): you only have their titles. Say so when you choose one, and prefer the exercise figures for anything sensitive. Start from the first selection, the videos that have `notes`.
+- You can't see videos, and nobody has watched them yet (see `videos`): you only have their titles. Say so when you choose one, and prefer the exercise figures for anything sensitive. Choose by what the session needs, from all the videos.
 
 ## Tables
 
@@ -84,14 +84,14 @@ One row per week, one per `week_start`; to fix one, `update` it. **`week_start` 
 
 The full video lists of the two channels, without clips of a minute or less, live streams and pregnancy classes. Consider all of them, including `cardio` and HIIT classes when she wants a more intense session. Columns: `yt_id`, `title` (as on YouTube), `duration_s`, `views`, `published_at`, `playlists` (the channel), `tags`, `notes` (a short Italian name), `flags`. The app shows `flags` under the video.
 
-- **First selection:** the videos with `notes`, picked by hand from their titles. Their `flags` says "Scelto dal titolo: ancora da guardare".
-- **All the others:** no `notes` yet, `flags` says "Ancora da guardare". Before using one in a plan, write a short Italian name in `notes`, and tell the owner you chose it from the title alone.
+- **Videos with `notes`:** a short list made for the demo, from their titles only. Their `flags` says "Scelto dal titolo: ancora da guardare". Having `notes` doesn't make a video better than the others.
+- **Videos without `notes`:** `flags` says "Ancora da guardare". Before using one in a plan, write a short Italian name in `notes`, and tell the owner you chose it from the title alone.
 - **Tags** are a rough guess from the title: `foot`, `pilates`, `yoga`, `barre`, `strength`, `band`, `cardio`, `mobility`, `stretch`, `warmup`, `cooldown`, `core`, `upper`, `lower`, `back`, `full-body`, `beginner`, `gentle`, `no-equipment`, `running`. A title can mislead, and a missing tag means nothing.
 - When someone has really watched a video, update its `flags` and `notes`. A video has to be here before you use its id in a plan.
 
 ```sql
 select yt_id, notes, title, duration_s / 60 as min from gemeas.videos
-where user_id = '<USER_ID>' and tags && '{foot}' order by notes nulls last, duration_s;
+where user_id = '<USER_ID>' and tags && '{foot}' order by duration_s;
 ```
 
 ## Pain zones
