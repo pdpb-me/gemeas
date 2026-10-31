@@ -1,5 +1,6 @@
-// Shaped like Supabase's generated file, written by hand until the `gemeas` schema exists.
-// Regenerate it from the database once the tables are there.
+// Shaped like Supabase's generated file, written by hand: the generator in the Supabase connection
+// only covers `public`. Checked column by column against the `gemeas` schema; after a schema change,
+// update it from supabase/migrations/ and check again.
 
 export type Json =
   | string

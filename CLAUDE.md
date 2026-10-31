@@ -26,7 +26,9 @@ Gemeas and Pisada share **one Supabase project** (`swubnxbzjqjeuiwlauwi`). Gemea
    - the free plan's storage limit
    - server functions (Pisada's "Sync now" uses one intervals.icu key: restrict it to its owner before any other login exists)
 
-After a schema change: regenerate `src/lib/database.types.ts` (written by hand until the schema exists; check the generator can do the `gemeas` schema), run the advisors, and update the coach's guide. Every table: `user_id default auth.uid()` + RLS "own rows only". Never put a secret key in the repo.
+A third app, `planejador`, has its own schema in the same project and is not exposed: never read or change it, and keep it out of the exposed list.
+
+After a schema change: update `src/lib/database.types.ts` by hand and check it against the database (the generator in the Supabase connection only covers `public`), run the advisors, and update the coach's guide. Every table: `user_id default auth.uid()` + RLS "own rows only". Never put a secret key in the repo.
 
 ## Commands
 
