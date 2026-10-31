@@ -37,6 +37,7 @@ After a schema change: update `src/lib/database.types.ts` by hand and check it a
 - `npm run build`: type-check, build the app into `dist/` and the demo into `dist/demo/`
 - `npm test`: Vitest. `npm run lint`: oxlint. `npm run preview`: serve the build
 - `node scripts/demo-shots.mjs <folder>`: screenshots at 360 × 800 (after build + preview; needs Playwright)
+- `node scripts/youtube-dataset.mjs` and `node scripts/videos-to-sql.mjs`: a channel's video list into `.xlsx`, then SQL for `gemeas.videos` (usage at the top of each). Keep the key, the datasets and the SQL outside the repo
 - Deploy: push to `main`; GitHub Actions lints, tests, builds and publishes to https://pdpb-me.github.io/gemeas/ (demo: /gemeas/demo/)
 
 ## Structure
