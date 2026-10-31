@@ -57,7 +57,7 @@ Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
 All UI in this project uses the neo-brutalist design system: read `design/neo-brutalist-dls/DESIGN.md`, `dls.css` and `reference.html` first.
 
-shadcn components stay, restyled; `src/index.css` imports `dls.css` and maps shadcn's colour names onto its tokens (the DLS `--muted` is shadcn's `muted-foreground`). The fonts are self-hosted with Fontsource, not loaded from Google. Sage, mustard and black mean pain low, medium and high, and nothing else; session status (done, partly, skipped) reads by shape, in ink. Tap targets ≥ 44 px; check at 360 px wide. Calm, not gamified: no streaks, no weight goal, no comment on weight going up or down. Pain colour always comes with its word. No sheet opens by itself. Every screen that loads has a skeleton, an error card and an empty state.
+shadcn components stay, restyled; `src/index.css` imports `dls.css` and maps shadcn's colour names onto its tokens (the DLS `--muted` is shadcn's `muted-foreground`). The fonts are self-hosted with Fontsource, not loaded from Google. Sage, mustard and black mean pain low, medium and high, and nothing else; session status (done, partly, skipped) reads by shape, in ink. Tap targets ≥ 44 px; check at 360 px wide. The twin dachshunds (`src/lib/dachshunds.ts`, `components/dachshunds.tsx`) are decoration for calm moments only: never next to a sore foot (Medio or worse) or the weight, and they never replace the exercise figures. Their browns are the one colour outside the DLS. Calm, not gamified: no streaks, no weight goal, no comment on weight going up or down. Pain colour always comes with its word. No sheet opens by itself. Every screen that loads has a skeleton, an error card and an empty state.
 
 ## Gotchas
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ActivityIcon, ChevronLeftIcon, ChevronRightIcon, FootprintsIcon, type LucideIcon } from 'lucide-react'
+import { Dachshunds } from '@/components/dachshunds'
 import { CardSkeleton, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -72,7 +73,13 @@ export function Activities({ today }: { today: string }) {
 
 // Activities by week and day, newest first
 export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; today: string; empty: string }) {
-  if (items.length === 0) return <p className="p-8 text-center text-muted-foreground">{empty}</p>
+  if (items.length === 0)
+    return (
+      <div className="flex flex-col gap-3 p-8 text-center text-muted-foreground">
+        <Dachshunds pose="walk" />
+        <p>{empty}</p>
+      </div>
+    )
   const thisMonday = mondayOf(today)
   const weeks = new Map<string, Map<string, ActivityRow[]>>()
   for (const a of items) {

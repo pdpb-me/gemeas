@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ExternalLinkIcon, PlayIcon } from 'lucide-react'
+import { Dachshunds } from '@/components/dachshunds'
 import { EmptyNote } from '@/components/states'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { demo } from '@/demo/state'
@@ -23,6 +24,7 @@ const LENGTHS = [
 ]
 // The kind of session a video becomes in the plan
 const KIND: Record<VideoType, string> = { foot: 'foot', pilates: 'strength', strength: 'strength', yoga: 'mobility' }
+const POSE = { foot: 'ball', pilates: 'plank', strength: 'lift', yoga: 'sit' } as const
 
 function Pills<T extends string>({
   label,
@@ -107,9 +109,12 @@ export default function Library() {
             return (
               <div key={v.yt_id} className="flex flex-col gap-2.5">
                 <button type="button" className={cn('row', isOpen && 'on')} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : v.yt_id)}>
-                  <span className="text">
-                    <span className="label">{v.name}</span>
-                    <span className="sub">{v.channel}</span>
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <Dachshunds pose={POSE[v.type]} solo className="w-14 shrink-0" />
+                    <span className="text">
+                      <span className="label">{v.name}</span>
+                      <span className="sub">{v.channel}</span>
+                    </span>
                   </span>
                   <span className="end">
                     <span className="flex items-baseline gap-1">

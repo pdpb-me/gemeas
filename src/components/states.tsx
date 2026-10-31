@@ -22,10 +22,11 @@ export function ErrorCard({ what = 'questo contenuto', onRetry, className }: { w
   )
 }
 
-// A calm line for "nothing here (yet)", with an optional action
-export function EmptyNote({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+// A calm line for "nothing here (yet)", with an optional picture and action
+export function EmptyNote({ title, children, action, picture }: { title: string; children?: ReactNode; action?: ReactNode; picture?: ReactNode }) {
   return (
     <Card className="items-start gap-1 px-4 py-4">
+      {picture && <div className="mb-2 self-stretch">{picture}</div>}
       <span className="text-[17px] font-bold">{title}</span>
       {children && <p className="text-sm text-muted-foreground">{children}</p>}
       {action}

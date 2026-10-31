@@ -84,6 +84,16 @@
     --fig-band: #2a2925;
     --fig-towel: #cfc9b8;
     --fig-inset: #e6e1d3;
+    /* The twin dachshunds (src/lib/dachshunds.ts): their browns are the one colour outside
+       the DLS, like the skin in the figures. They never mean a status. */
+    --dog-red: #b5622b;
+    --dog-red-far: #96501f;
+    --dog-red-ear: #8a4518;
+    --dog-red-tan: #d9a066;
+    --dog-black: #34312b;
+    --dog-black-far: #24221d;
+    --dog-black-tan: #c98f52;
+    --dog-mat: #cfc9b8;
 }
 
 @layer base {

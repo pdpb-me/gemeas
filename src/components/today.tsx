@@ -3,6 +3,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { MorningCheckIn } from '@/components/check-ins'
 import { CoachNote } from '@/components/coach-note'
+import { Dachshunds } from '@/components/dachshunds'
 import { ExerciseScreen } from '@/components/exercise-screen'
 import { PlanList } from '@/components/plan-list'
 import { SessionScreen, type SessionHandlers } from '@/components/session-screen'
@@ -12,7 +13,7 @@ import { WeekStrip } from '@/components/week-strip'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { write } from '@/data/store'
-import type { DayDot } from '@/data/types'
+import type { DayDot, DaySession } from '@/data/types'
 import { useCheckIns } from '@/hooks/use-check-ins'
 import { useLastLog, useReview, useWeekDots } from '@/hooks/use-data'
 import { useDay } from '@/hooks/use-day'
@@ -22,6 +23,7 @@ import { dueCheckIn } from '@/lib/check-ins'
 import { addDays, daysBetween, mondayOf, weekOf } from '@/lib/dates'
 import { dayMonth, inDays, longDate, plural, weekday } from '@/lib/format'
 import { getPref, setPref } from '@/lib/prefs'
+import { countsAsDone, sessionPain } from '@/lib/session-status'
 
 type Screen = { kind: 'day' } | { kind: 'session'; id: string; openLog?: boolean } | { kind: 'exercise'; id: string; index: number }
 
@@ -151,6 +153,7 @@ function Day({
   const morning = <MorningCheckIn state={checkIns} ask={ask} isToday={isToday} afternoon={isToday && hour >= 12} />
   // the check-in comes first until it's answered or the morning has passed; then the plan does
   const morningFirst = !isToday || hour < 12 || checkIns.checkIns?.foot != null
+  const footSore = (checkIns.checkIns?.foot ?? 0) >= 5
   const subtitle = isToday ? longDate(date) : `${dayMonth(date)} · ${inDays(date, today)}`
 
   return (
@@ -209,15 +212,22 @@ function Day({
         ) : day.sessions === undefined ? (
           <CardSkeleton />
         ) : day.sessions.length === 0 ? (
-          <NothingPlanned dots={dots} />
+          <NothingPlanned dots={dots} calm={!footSore} />
         ) : (
-          <PlanList
-            sessions={day.sessions}
-            date={date}
-            today={today}
-            onOpen={(id, openLog) => nav.push({ kind: 'session', id, openLog })}
-            onStatus={day.setStatus}
-          />
+          <>
+            {isToday && !footSore && dayDone(day.sessions) && (
+              <EmptyNote title="Fatto per oggi" picture={<Dachshunds pose="highfive" />}>
+                A domani.
+              </EmptyNote>
+            )}
+            <PlanList
+              sessions={day.sessions}
+              date={date}
+              today={today}
+              onOpen={(id, openLog) => nav.push({ kind: 'session', id, openLog })}
+              onStatus={day.setStatus}
+            />
+          </>
         )}
 
         {!morningFirst && morning}
@@ -228,11 +238,26 @@ function Day({
   )
 }
 
-// No sessions on this day: a rest day, or no plan at all yet
-function NothingPlanned({ dots }: { dots: Record<string, DayDot[]> }) {
+// Every session is logged, at least one really happened, and none of them hurt
+const dayDone = (sessions: DaySession[]) =>
+  sessions.every((s) => s.log) &&
+  sessions.some((s) => countsAsDone(s.log!.status)) &&
+  !sessions.some((s) => (sessionPain(s).score ?? 0) >= 5)
+
+// No sessions on this day: a rest day, or no plan at all yet. The dogs stay away from a sore foot.
+function NothingPlanned({ dots, calm }: { dots: Record<string, DayDot[]>; calm: boolean }) {
   const planned = Object.values(dots).some((d) => d.length > 0)
-  if (planned) return <EmptyNote title="Giorno di riposo">Niente in programma. Le camminate contano comunque: puoi aggiungerle qui sotto.</EmptyNote>
-  return <EmptyNote title="Ancora nessun piano">Il coach scrive il piano al check-in settimanale, e poi compare qui.</EmptyNote>
+  if (planned)
+    return (
+      <EmptyNote title="Giorno di riposo" picture={calm && <Dachshunds pose="rest" />}>
+        Niente in programma. Le camminate contano comunque: puoi aggiungerle qui sotto.
+      </EmptyNote>
+    )
+  return (
+    <EmptyNote title="Ancora nessun piano" picture={calm && <Dachshunds pose="sit" />}>
+      Il coach scrive il piano al check-in settimanale, e poi compare qui.
+    </EmptyNote>
+  )
 }
 
 // At the top of today: the coach's note for this week, and a word about yesterday or a gap
