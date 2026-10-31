@@ -7,7 +7,7 @@ import type { CheckIns, DayDot, DaySession, Video } from '@/data/types'
 import { now } from '@/lib/clock'
 import { addDays, appDay, DAY_STARTS_AT } from '@/lib/dates'
 
-const ACTIVITY_COLUMNS = 'id, date, sport, duration_s, distance_m'
+const ACTIVITY_COLUMNS = 'id, date, sport, source, duration_s, distance_m'
 const PAGE = 1000 // Supabase returns at most this many rows per request
 
 type Result<T> = { data: T | null; error: { message: string; code?: string } | null }
@@ -372,6 +372,11 @@ export const backend: Backend = {
 
   async addWalk(date, minutes, km) {
     check(await supabase.from('activities').insert(walkRow(date, minutes, km)))
+  },
+
+  async syncWatch() {
+    const { error } = await supabase.functions.invoke('gemeas-garmin-sync', { method: 'POST' })
+    if (error) throw new Error(error.message)
   },
 
   async removeWalk(id) {

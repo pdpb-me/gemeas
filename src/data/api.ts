@@ -51,4 +51,5 @@ export interface Backend {
   saveWeight(date: string, kg: number | null): Promise<void>
   addWalk(date: string, minutes: number, km: number | null): Promise<void>
   removeWalk(id: string): Promise<void>
+  syncWatch(): Promise<void> // asks the server to copy new activities from the watch
 }

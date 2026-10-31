@@ -16,6 +16,7 @@ const walkText = (w: { duration_s: number | null; distance_m: number | null }) =
   [duration(w.duration_s), w.distance_m ? km(w.distance_m) : null].filter(Boolean).join(' · ')
 
 // The day's walks, and a quick way to add one. Removing one offers Undo.
+// A walk from the watch stays: the next sync would only bring it back.
 export function DayWalks({ date }: { date: string }) {
   const [open, setOpen] = useState(false)
   const walks = (useDayWalks(date).data ?? []).filter((a) => a.sport === 'walk')
@@ -40,11 +41,16 @@ export function DayWalks({ date }: { date: string }) {
               <FootprintsIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="text-[17px] font-bold">Camminata</span>
-                <span className="text-sm text-muted-foreground">{walkText(w)}</span>
+                <span className="text-sm text-muted-foreground">
+                  {walkText(w)}
+                  {w.source === 'garmin' && ' · dall’orologio'}
+                </span>
               </span>
-              <Button variant="ghost" size="icon" className="size-11 text-muted-foreground" aria-label="Rimuovi questa camminata" onClick={() => remove(w)}>
-                <Trash2Icon className="size-4" />
-              </Button>
+              {w.source !== 'garmin' && (
+                <Button variant="ghost" size="icon" className="size-11 text-muted-foreground" aria-label="Rimuovi questa camminata" onClick={() => remove(w)}>
+                  <Trash2Icon className="size-4" />
+                </Button>
+              )}
             </div>
           ))}
         </Card>

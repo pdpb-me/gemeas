@@ -1,0 +1,22 @@
+# Copies new watch activities into the database every night, so the coach sees them
+# even on a day the app stays closed (or by hand from the Actions tab).
+# The function answers with totals only: these logs are public.
+name: Garmin sync
+
+on:
+  schedule:
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - run: >
+          curl --fail-with-body --silent --show-error --max-time 60 -X POST
+          -H "x-sync-secret: $SYNC_SECRET"
+          https://swubnxbzjqjeuiwlauwi.supabase.co/functions/v1/gemeas-garmin-sync
+        env:
+          SYNC_SECRET: ${{ secrets.GEMEAS_SYNC_SECRET }}

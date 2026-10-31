@@ -1,6 +1,7 @@
 import { toast } from 'sonner'
 import type { Backend } from '@/data/api'
 import { backend } from '@/data/backend'
+import { getPref, setPref } from '@/lib/prefs'
 
 // The app's door to the data.
 // - Reads go straight to the backend; each names the tables it reads (for reloading).
@@ -110,6 +111,21 @@ export const write = {
   saveWeight: save('saveWeight', 'Peso non salvato'),
   addWalk: save('addWalk', 'Camminata non salvata'),
   removeWalk: save('removeWalk', 'Camminata non rimossa'),
+}
+
+// New activities from the watch, at most once an hour. Quiet if it fails: the night's sync
+// tries again, and nothing she typed depends on it.
+const WATCH_SYNC_EVERY = 60 * 60_000
+
+export async function syncWatch() {
+  if (Date.now() - Number(getPref('watch-synced') ?? 0) < WATCH_SYNC_EVERY) return
+  setPref('watch-synced', String(Date.now()))
+  try {
+    await backend.syncWatch()
+    changed(['activities'])
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 // Everything may have changed elsewhere (the coach): reload all

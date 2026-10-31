@@ -23,8 +23,8 @@ export function newId() {
 const stamp = () => now().toISOString()
 
 function activityOf(a: Db['activities'][number]): ActivityRow {
-  const { id, date, sport, duration_s, distance_m } = a
-  return { id, date, sport, duration_s, distance_m }
+  const { id, date, sport, source, duration_s, distance_m } = a
+  return { id, date, sport, source, duration_s, distance_m }
 }
 
 export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => number } = {}): Backend {
@@ -301,6 +301,9 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       const d = db()
       d.activities = d.activities.filter((a) => a.id !== id)
     },
+
+    // The demo has no watch: its made-up activities are already there
+    async syncWatch() {},
   }
   return backend
 }

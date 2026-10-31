@@ -10,7 +10,7 @@ export type Review = Pick<Tables<'reviews'>, 'id' | 'week_start' | 'summary' | '
 export type Status = 'done' | 'partial' | 'skipped'
 export type Effort = 'light' | 'medium' | 'hard'
 
-export type ActivityRow = Pick<Tables<'activities'>, 'id' | 'date' | 'sport' | 'duration_s' | 'distance_m'>
+export type ActivityRow = Pick<Tables<'activities'>, 'id' | 'date' | 'sport' | 'source' | 'duration_s' | 'distance_m'>
 
 export type DaySession = Tables<'plan_sessions'> & {
   log: SessionLog | null

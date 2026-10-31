@@ -76,7 +76,7 @@ One row per week, one per `week_start`; to fix one, `update` it. **`week_start` 
 
 - **`gemeas.session_logs`:** one row per session at most. `status` is `done`, `partial` (shown as "In parte") or `skipped`; `effort` is `light`, `medium` or `hard` (after `trainer` sessions); `comment` is her note. Many logs have no pain or note: that's fine.
 - **`gemeas.symptoms`:** `score` 0–10. `timing = 'next_morning'` with no `session_log_id` is the morning check-in, one per day; `timing = 'during'` is tied to a session log. The foot is `body_area = 'foot'`, `side = 'R'`.
-- **`gemeas.activities`:** walks are `sport = 'walk'`, `source = 'manual'`, with `duration_s` and `distance_m`.
+- **`gemeas.activities`:** what she actually did. `source = 'garmin'` comes from her watch, synced at least every night (`source = 'manual'` is a walk she typed in). `sport` is `walk`, `hike`, `strength`, or Garmin's own word such as `pilates` or `indoor_cardio`. Columns: `duration_s`, `distance_m`, and for watch rows `hr_avg` and `elevation_m` (any may be empty). A row is not linked to a planned session: compare by date and kind. Only what she starts on the watch appears, so a planned session with no activity isn't a skip: `session_logs` says what happened. There can be several walks in one day.
 - **`gemeas.tests`:** the heel-raise test is `test = 'sl_heel_raise'`, `unit = 'rip.'`, one row per side (`L`, `R`).
 - **`gemeas.weights`:** `kg`, one row per day, optional. Compare weekly averages, never single days.
 
@@ -128,8 +128,8 @@ select date, score from gemeas.symptoms
 where user_id = '<USER_ID>' and body_area = 'foot' and timing = 'next_morning' and session_log_id is null
   and date >= current_date - 28 order by date desc;
 
-select date, round(duration_s / 60.0) as min, distance_m / 1000.0 as km from gemeas.activities
-where user_id = '<USER_ID>' and sport = 'walk' and date >= current_date - 28 order by date desc;
+select date, sport, source, round(duration_s / 60.0) as min, distance_m / 1000.0 as km, hr_avg, elevation_m from gemeas.activities
+where user_id = '<USER_ID>' and date >= current_date - 28 order by date desc;
 ```
 
 ## Checks before you say "fatto"

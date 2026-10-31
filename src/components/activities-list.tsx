@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ActivityIcon, ChevronLeftIcon, ChevronRightIcon, FootprintsIcon, type LucideIcon } from 'lucide-react'
+import { ActivityIcon, ChevronLeftIcon, ChevronRightIcon, DumbbellIcon, FootprintsIcon, MountainIcon, type LucideIcon } from 'lucide-react'
 import { Dachshunds } from '@/components/dachshunds'
 import { CardSkeleton, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,11 @@ import { capitalize, dayLabel, dayMonth, duration, km, monthName, plural } from 
 
 const SPORT: Record<string, { label: string; icon: LucideIcon }> = {
   walk: { label: 'Camminata', icon: FootprintsIcon },
+  hike: { label: 'Escursione', icon: MountainIcon },
+  strength: { label: 'Forza', icon: DumbbellIcon },
+  indoor_cardio: { label: 'Cardio', icon: ActivityIcon },
 }
-const sportOf = (s: string) => SPORT[s] ?? { label: capitalize(s), icon: ActivityIcon }
+const sportOf = (s: string) => SPORT[s] ?? { label: capitalize(s.replaceAll('_', ' ')), icon: ActivityIcon }
 
 // Activities tab: one month at a time (‹ Novembre 2026 ›), its weeks newest first, by day
 export function Activities({ today }: { today: string }) {

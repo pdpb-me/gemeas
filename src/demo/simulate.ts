@@ -292,7 +292,7 @@ export function buildWorld(seed = 7): Db {
     const isDemoToday = week === WEEKS && dow >= 3
     if (week >= 9) footBase = 0
 
-    // Walks, typed in by hand after the walk
+    // Walks: some from the watch, the others typed in by hand after the walk
     const walkChance = holiday(date) ? 0.3 : sick(date) ? 0 : 0.3
     if (!isDemoToday && r() < walkChance) {
       const minutes = between(r, 40, 60)
@@ -303,7 +303,7 @@ export function buildWorld(seed = 7): Db {
           id: id('walk'),
           date,
           sport: 'walk',
-          source: 'manual',
+          source: dow % 2 ? 'garmin' : 'manual',
           duration_s: minutes * 60,
           distance_m: metres,
           created_at: holiday(date) ? at(W(12, 0), '08:00') : at(date, '18:30'),

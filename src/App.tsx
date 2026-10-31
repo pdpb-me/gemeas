@@ -1,10 +1,11 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { ChartLineIcon, DumbbellIcon, SunIcon } from 'lucide-react'
 import { Login } from '@/components/login'
 import { Progress } from '@/components/progress'
 import { CardSkeleton } from '@/components/states'
 import { Today } from '@/components/today'
 import { DemoBar, DemoLibrary } from '@/data/backend'
+import { syncWatch } from '@/data/store'
 import { useSession } from '@/hooks/use-session'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +21,16 @@ function App() {
   const [tab, setTab] = useState('today')
   // a session or exercise screen has its own buttons at the bottom: hide the tab bar there
   const [deep, setDeep] = useState(false)
+  // The app opened, or came back to the front
+  useEffect(() => {
+    if (!signedIn) return
+    void syncWatch()
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void syncWatch()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [signedIn])
   if (signedIn === undefined) return null // still checking, a split second
   if (signedIn === false) return <Login />
   return (
