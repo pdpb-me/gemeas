@@ -42,13 +42,14 @@ export function CoachChat() {
   const [text, setText] = useState(kept.draft)
   const [sending, setSending] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
-  const [pending, setPending] = useState<{ text: string; reply: string; before: number } | null>(null)
+  const [pending, setPending] = useState<{ text: string; reply: string; lastId?: string } | null>(null)
   const box = useRef<HTMLTextAreaElement>(null)
   const followEnd = useRef(true)
 
   const saved = messages.data
   // stays until the saved messages include this exchange, so nothing flashes away
-  const showPending = pending && (saved?.length ?? 0) < pending.before + 2
+  const last = saved?.at(-1)
+  const showPending = pending && !(last && last.id !== pending.lastId && last.role === 'coach')
 
   useEffect(() => {
     kept.draft = text
@@ -82,7 +83,7 @@ export function CoachChat() {
     setFailed(null)
     setSending(true)
     followEnd.current = true
-    setPending({ text: message, reply: '', before: saved?.length ?? 0 })
+    setPending({ text: message, reply: '', lastId: last?.id })
     const problem = await sendChat(message, (reply) => setPending((p) => p && { ...p, reply }))
     setSending(false)
     if (problem) {

@@ -2,13 +2,17 @@
 // talk to Supabase; the demo build swaps it out (see src/data/backend.ts).
 import type { Backend } from '@/data/api'
 import { checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, isPill, kindOf, walkRow } from '@/data/rules'
-import { supabase } from '@/data/supabase-client'
-import type { CheckIns, DayDot, DaySession, Video } from '@/data/types'
+import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/data/supabase-client'
+import type { ChatMessage, CheckIns, DayDot, DaySession, Video } from '@/data/types'
 import { now } from '@/lib/clock'
 import { addDays, appDay, DAY_STARTS_AT } from '@/lib/dates'
 
 const ACTIVITY_COLUMNS = 'id, date, sport, source, duration_s, distance_m'
 const PAGE = 1000 // Supabase returns at most this many rows per request
+const CHAT_SHOWN = 200 // the chat shows the latest messages
+const COACH_DOWN = 'Il coach non risponde adesso. Riprova tra poco.'
+const REPLY_CHECKS = 20
+const REPLY_CHECK_MS = 3000
 
 type Result<T> = { data: T | null; error: { message: string; code?: string } | null }
 
@@ -28,6 +32,22 @@ async function all<T>(page: (from: number, to: number) => PromiseLike<Result<T[]
     rows.push(...batch)
     if (batch.length < PAGE) return rows
   }
+}
+
+async function chatMessages(): Promise<ChatMessage[]> {
+  const rows = check(await supabase.from('chat_messages').select('id, role, text, created_at').not('text', 'is', null).order('seq', { ascending: false }).limit(CHAT_SHOWN))
+  return rows.reverse().map((m) => ({ id: m.id, role: m.role === 'user' ? 'user' : 'coach', text: m.text ?? '', created_at: m.created_at }))
+}
+
+// The connection dropped (on an iPhone, leaving the app is enough): the server goes on by
+// itself, so look for its reply. A failed message isn't saved, and none comes back.
+async function waitForReply(after: string | undefined) {
+  for (let i = 0; i < REPLY_CHECKS; i++) {
+    await new Promise((r) => setTimeout(r, REPLY_CHECK_MS))
+    const last = await chatMessages().then((m) => m.at(-1), () => undefined)
+    if (last && last.id !== after && last.role === 'coach') return
+  }
+  throw new Error(COACH_DOWN)
 }
 
 async function planSession(id: string) {
@@ -379,18 +399,61 @@ export const backend: Backend = {
     if (error) throw new Error(error.message)
   },
 
-  // The chat with the coach needs its tables and server function first: until then
-  // nobody has it, so the tab stays hidden in the real app
   async coachAvailable() {
-    return false
+    const profile = check(await supabase.from('coach_profiles').select('enabled').maybeSingle())
+    return profile?.enabled === true
   },
 
-  async chatMessages() {
-    return []
-  },
+  chatMessages,
 
-  async sendChat() {
-    throw new Error('Il coach non è ancora disponibile')
+  // The server sends the reply as lines of JSON: { d: more text }, { reset: true } to start
+  // the text again, { done: true } at the end, or { error: what to tell her }
+  async sendChat(text, onReply) {
+    const { data } = await supabase.auth.getSession()
+    const before = (await chatMessages()).at(-1)?.id
+    let res: Response
+    try {
+      res = await fetch(`${SUPABASE_URL}/functions/v1/gemeas-coach-chat`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${data.session?.access_token}`, apikey: SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      })
+    } catch {
+      throw new Error(COACH_DOWN)
+    }
+    if (!res.ok || !res.body) {
+      const body = (await res.json().catch(() => null)) as { error?: string } | null
+      throw new Error(body?.error ?? COACH_DOWN)
+    }
+
+    let reply = ''
+    let pieces = ''
+    let finished = false
+    const decoder = new TextDecoder()
+    const reader = res.body.getReader()
+    try {
+      for (;;) {
+        const { done, value } = await reader.read()
+        if (done) break
+        pieces += decoder.decode(value, { stream: true })
+        const lines = pieces.split('\n')
+        pieces = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.trim()) continue
+          const message = JSON.parse(line) as { d?: string; reset?: boolean; done?: boolean; error?: string }
+          if (message.error) throw new Error(message.error)
+          if (message.done) finished = true
+          if (message.reset) reply = ''
+          if (message.d) {
+            reply += message.d
+            onReply(reply)
+          }
+        }
+      }
+    } catch (e) {
+      if (!(e instanceof TypeError)) throw e // a TypeError is the connection dropping
+    }
+    if (!finished) await waitForReply(before)
   },
 
   async removeWalk(id) {

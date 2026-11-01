@@ -80,6 +80,12 @@ One row per week, one per `week_start`; to fix one, `update` it. **`week_start` 
 - **`gemeas.tests`:** the heel-raise test is `test = 'sl_heel_raise'`, `unit = 'rip.'`, one row per side (`L`, `R`).
 - **`gemeas.weights`:** `kg`, one row per day, optional. Compare weekly averages, never single days.
 
+- **`gemeas.chat_messages`:** what she wrote to the coach in the app, and its replies. Read `role` (`user` or `assistant`), `text` and `created_at`, only where `text` is not null, ordered by `seq`. That coach can read her data but can't change the plan, so she may have asked for something there: check before you plan. Don't read `content`: it is long, and the same words.
+
+### `gemeas.coach_profiles`
+
+Who has the chat in the app. `instructions` is private: who she is, for the coach in the app. When something important changes (the trainer's days, a decision about the foot), propose an update to it. A change starts a new conversation in the app. Don't change `enabled` or `daily_limit` unless the owner asks.
+
 ### `gemeas.videos`
 
 The full video lists of the two channels, without clips of a minute or less, live streams and pregnancy classes. Consider all of them, including `cardio` and HIIT classes when she wants a more intense session. Columns: `yt_id`, `title` (as on YouTube), `duration_s`, `views`, `published_at`, `playlists` (the channel), `tags`, `notes` (a short Italian name), `flags`. The app shows `flags` under the video.

@@ -80,6 +80,111 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          cache_read_tokens: number | null
+          cache_write_tokens: number | null
+          content: Json
+          created_at: string
+          id: string
+          input_tokens: number | null
+          model: string | null
+          output_tokens: number | null
+          role: string
+          seq: number
+          text: string | null
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          cache_read_tokens?: number | null
+          cache_write_tokens?: number | null
+          content: Json
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          role: string
+          text?: string | null
+          thread_id: string
+          user_id?: string
+        }
+        Update: {
+          cache_read_tokens?: number | null
+          cache_write_tokens?: number | null
+          content?: Json
+          created_at?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          role?: string
+          text?: string | null
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_threads: {
+        Row: {
+          closed: boolean
+          created_at: string
+          fingerprint: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          closed?: boolean
+          created_at?: string
+          fingerprint: string
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          closed?: boolean
+          created_at?: string
+          fingerprint?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_profiles: {
+        Row: {
+          created_at: string
+          daily_limit: number
+          enabled: boolean
+          instructions: string
+          reply_started_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_limit?: number
+          enabled?: boolean
+          instructions?: string
+          reply_started_at?: string | null
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          daily_limit?: number
+          enabled?: boolean
+          instructions?: string
+          reply_started_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       plan_sessions: {
         Row: {
           block: string | null
