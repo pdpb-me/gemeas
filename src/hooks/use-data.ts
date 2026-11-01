@@ -23,6 +23,10 @@ export function useChatMessages() {
   return useQuery('chat-messages', READS.chatMessages, () => data.chatMessages(), { keepPrevious: true })
 }
 
+export function useChatProposals() {
+  return useQuery('chat-proposals', READS.chatProposals, () => data.chatProposals(), { keepPrevious: true })
+}
+
 export function useProgress(today: string) {
   return useQuery(`progress:${today}`, READS.progress, () => data.progress(today), { keepPrevious: true })
 }

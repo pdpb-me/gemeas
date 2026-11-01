@@ -185,6 +185,50 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_proposals: {
+        Row: {
+          changes: Json
+          created_at: string
+          decided_at: string | null
+          id: string
+          lines: string[]
+          status: string
+          summary: string
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          changes: Json
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          lines: string[]
+          status?: string
+          summary: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Update: {
+          changes?: Json
+          created_at?: string
+          decided_at?: string | null
+          id?: string
+          lines?: string[]
+          status?: string
+          summary?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_proposals_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plan_sessions: {
         Row: {
           block: string | null
@@ -466,7 +510,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decide_proposal: {
+        Args: { p_apply: boolean; p_id: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

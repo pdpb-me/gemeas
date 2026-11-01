@@ -4,7 +4,7 @@
 import type { Backend } from '@/data/api'
 import { check, checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, isPill, kindOf, LIMITS, walkRow } from '@/data/rules'
 import type { ActivityRow, CheckIns, DayDot, DaySession } from '@/data/types'
-import { scriptedReply } from '@/demo/coach-replies'
+import { scriptedProposal, scriptedReply } from '@/demo/coach-replies'
 import type { Db } from '@/demo/db'
 import { DEMO_USER } from '@/demo/db'
 import { now } from '@/lib/clock'
@@ -167,8 +167,15 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
     async sendChat(text, onReply) {
       await wait()
       check(LIMITS.chat(text), 'messaggio')
-      db().chat_messages.push({ id: newId(), role: 'user', text: text.trim(), created_at: stamp() })
-      const reply = scriptedReply(text, db(), appDay(now()))
+      const d = db()
+      d.chat_messages.push({ id: newId(), role: 'user', text: text.trim(), created_at: stamp() })
+      const today = appDay(now())
+      const reply = scriptedReply(text, d, today)
+      const proposal = scriptedProposal(text, d, today)
+      if (proposal) {
+        for (const p of d.chat_proposals) if (p.status === 'pending') p.status = 'replaced'
+        d.chat_proposals.push({ ...proposal, id: newId(), status: 'pending', created_at: stamp() })
+      }
       // a piece at a time, like the real coach's reply
       const words = reply.split(/(?<=\s)/)
       for (let i = 1; i <= words.length; i++) {
@@ -176,6 +183,42 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
         onReply(words.slice(0, i).join(''))
       }
       db().chat_messages.push({ id: newId(), role: 'coach', text: reply, created_at: stamp() })
+    },
+
+    async chatProposals() {
+      await wait()
+      return db().chat_proposals.map(({ id, summary, lines, status, created_at }) => ({ id, summary, lines: [...lines], status, created_at }))
+    },
+
+    // Like gemeas.decide_proposal: all or nothing, and only if nothing changed in the meantime
+    async decideProposal(id, apply) {
+      await wait()
+      const d = db()
+      const proposal = d.chat_proposals.find((p) => p.id === id)
+      if (!proposal) throw new Error('Proposta non trovata')
+      if (proposal.status !== 'pending') return
+      if (!apply) {
+        proposal.status = 'declined'
+        return
+      }
+      for (const c of proposal.changes) {
+        if (c.op !== 'move') continue
+        const session = d.plan_sessions.find((p) => p.id === c.session_id)
+        if (!session || session.date !== c.before.date || session.slot !== c.before.slot) {
+          proposal.status = 'stale'
+          return
+        }
+      }
+      for (const c of proposal.changes) {
+        if (c.op === 'move') {
+          await backend.moveSession(c.session_id, c.after.date, c.after.slot)
+        } else {
+          const note = d.reviews.find((r) => r.week_start === c.after.week_start)
+          if (note) note.decisions = c.after.decisions
+          else d.reviews.push({ id: newId(), week_start: c.after.week_start, summary: null, decisions: c.after.decisions, created_at: stamp(), user_id: DEMO_USER })
+        }
+      }
+      proposal.status = 'applied'
     },
 
     async setStatus(id, status) {

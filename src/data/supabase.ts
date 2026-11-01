@@ -406,6 +406,15 @@ export const backend: Backend = {
 
   chatMessages,
 
+  async chatProposals() {
+    const rows = check(await supabase.from('plan_proposals').select('id, summary, lines, status, created_at').order('created_at', { ascending: false }).limit(CHAT_SHOWN))
+    return rows.reverse()
+  },
+
+  async decideProposal(id, apply) {
+    check(await supabase.rpc('decide_proposal', { p_id: id, p_apply: apply }))
+  },
+
   // The server sends the reply as lines of JSON: { d: more text }, { reset: true } to start
   // the text again, { done: true } at the end, or { error: what to tell her }
   async sendChat(text, onReply) {

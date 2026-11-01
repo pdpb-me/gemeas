@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Backend } from '@/data/api'
 import { CHAT_MAX_CHARS, checkInRow } from '@/data/rules'
-import { scriptedReply } from '@/demo/coach-replies'
+import { scriptedProposal, scriptedReply } from '@/demo/coach-replies'
 import { emptyDb, type Db } from '@/demo/db'
 import { createMemoryBackend } from '@/demo/memory'
+import { placeProposals } from '@/lib/chat-items'
 import { appDay } from '@/lib/dates'
 import { now } from '@/lib/clock'
 
@@ -45,8 +46,9 @@ describe('the demo coach', () => {
     expect(reply).not.toContain('61')
   })
 
-  it('says it cannot change the plan', () => {
-    expect(scriptedReply('Puoi spostare la lezione?', db, TODAY)).toContain('non posso cambiare il piano')
+  it('says so when there is nothing to move, and proposes nothing', () => {
+    expect(scriptedReply('Puoi spostare la lezione?', db, TODAY)).toContain('Non vedo sedute')
+    expect(scriptedProposal('Puoi spostare la lezione?', db, TODAY)).toBeNull()
   })
 
   it('reads the plan of today, in order, and only today', () => {
@@ -101,6 +103,81 @@ describe('the chat', () => {
     const messages = await api.chatMessages()
     messages[0].text = 'cambiato'
     expect(db.chat_messages[0].text).toBe('Ciao')
+  })
+
+  describe('proposals', () => {
+    const SESSION = { slot: 'am', position: 0, kind: 'foot', instructions: null, exercises: [], video_ids: [], block: null, created_at: '2026-01-01T00:00:00Z', user_id: 'u' }
+    const today = () => appDay(now())
+    const pending = async () => (await api.chatProposals()).at(-1)!
+
+    beforeEach(() => {
+      db.plan_sessions.push({ ...SESSION, id: 'p', date: today(), title: 'Mobilità' })
+    })
+
+    it('changes nothing until she applies it, then moves the session and what she logged', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      const proposal = await pending()
+      expect(proposal.status).toBe('pending')
+      expect(db.plan_sessions[0].date).toBe(today())
+      await api.decideProposal(proposal.id, true)
+      expect((await pending()).status).toBe('applied')
+      expect(db.plan_sessions[0].date).not.toBe(today())
+    })
+
+    it('leaves the plan alone when she says no', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      const { id } = await pending()
+      await api.decideProposal(id, false)
+      expect((await pending()).status).toBe('declined')
+      expect(db.plan_sessions[0].date).toBe(today())
+    })
+
+    it('applies nothing if the session changed in the meantime', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      const { id } = await pending()
+      await api.moveSession('p', today(), 'pm')
+      await api.decideProposal(id, true)
+      expect((await pending()).status).toBe('stale')
+      expect(db.plan_sessions[0].slot).toBe('pm')
+      expect(db.plan_sessions[0].date).toBe(today())
+    })
+
+    it('counts one decision only', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      const { id } = await pending()
+      await api.decideProposal(id, false)
+      await api.decideProposal(id, true)
+      expect((await pending()).status).toBe('declined')
+      expect(db.plan_sessions[0].date).toBe(today())
+    })
+
+    it('replaces a proposal she has not decided on', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      await api.sendChat('Facciamo il punto della settimana?', () => {})
+      expect((await api.chatProposals()).map((p) => p.status)).toEqual(['replaced', 'pending'])
+    })
+
+    it('writes the weekly note when she applies it', async () => {
+      await api.sendChat('Facciamo il punto della settimana?', () => {})
+      expect(db.reviews).toHaveLength(0)
+      await api.decideProposal((await pending()).id, true)
+      expect(db.reviews).toHaveLength(1)
+      expect(new Date(`${db.reviews[0].week_start}T12:00:00`).getDay()).toBe(1)
+    })
+
+    it('never hands the changes to the screens', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      expect(await pending()).not.toHaveProperty('changes')
+    })
+
+    it('shows a proposal under the reply saved after it, or at the end', () => {
+      const m = (id: string, role: string, at: number) => ({ id, role, created_at: new Date(at).toISOString() })
+      const p = (at: number) => ({ created_at: new Date(at).toISOString() })
+      const { under, atEnd } = placeProposals([m('a', 'user', 1), m('b', 'coach', 3), m('c', 'user', 4), m('d', 'coach', 6)], [p(2), p(5), p(7)])
+      expect(under.get('b')).toEqual([p(2)])
+      expect(under.get('d')).toEqual([p(5)])
+      expect(atEnd).toEqual([p(7)])
+    })
   })
 
   it('reads the app day for the plan', async () => {

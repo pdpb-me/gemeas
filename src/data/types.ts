@@ -32,6 +32,9 @@ export type CheckIns = {
 // One message in the chat with the coach
 export type ChatMessage = { id: string; role: 'user' | 'coach'; text: string; created_at: string }
 
+// What the coach proposes: it changes the plan only if she applies it
+export type Proposal = Pick<Tables<'plan_proposals'>, 'id' | 'summary' | 'lines' | 'status' | 'created_at'>
+
 export type TrendSymptom = { date: string; body_area: string; timing: string; score: number }
 
 export type ProgressData = {

@@ -37,6 +37,7 @@ const WRITES = new Set<keyof Backend>([
   'addWalk',
   'removeWalk',
   'sendChat',
+  'decideProposal',
 ])
 
 // Every write is remembered in this browser

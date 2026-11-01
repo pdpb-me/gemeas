@@ -20,7 +20,7 @@ This file is public, so it holds no names, user ids or health details. Those are
 ## How the plan is built
 
 - The **personal trainer's lessons** come first: other days are planned around them, and the lessons can be cancelled or moved. Write them with kind `trainer`.
-- She can move a single session herself in the app; its logs move with it. A session on another day than planned is a deliberate move, not an error. For bigger changes she or the owner asks you.
+- She can move a single session herself in the app; its logs move with it. A session on another day than planned is a deliberate move, not an error. She can also change the plan with the coach in the app, by applying its proposals: read the plan as it is now before you write.
 - You can't see videos, and nobody has watched them yet (see `videos`): you only have their titles. Say so when you choose one, and prefer the exercise figures for anything sensitive. Choose by what the session needs, from all the videos.
 
 ## Tables
@@ -80,7 +80,8 @@ One row per week, one per `week_start`; to fix one, `update` it. **`week_start` 
 - **`gemeas.tests`:** the heel-raise test is `test = 'sl_heel_raise'`, `unit = 'rip.'`, one row per side (`L`, `R`).
 - **`gemeas.weights`:** `kg`, one row per day, optional. Compare weekly averages, never single days.
 
-- **`gemeas.chat_messages`:** what she wrote to the coach in the app, and its replies. Read `role` (`user` or `assistant`), `text` and `created_at`, only where `text` is not null, ordered by `seq`. That coach can read her data but can't change the plan, so she may have asked for something there: check before you plan. Don't read `content`: it is long, and the same words.
+- **`gemeas.chat_messages`:** what she wrote to the coach in the app, and its replies. Read `role` (`user` or `assistant`), `text` and `created_at`, only where `text` is not null, ordered by `seq`. She talks to that coach about the plan, so read this before you plan. Don't read `content`: it is long, and the same words.
+- **`gemeas.plan_proposals`:** what that coach proposed. `status` is `pending`, `applied` (she tapped Applica), `declined`, `stale` (the plan had changed, so nothing was applied) or `replaced`. `summary` and `lines` say what it was. The plan and the notes you read already hold what she applied.
 
 ### `gemeas.coach_profiles`
 

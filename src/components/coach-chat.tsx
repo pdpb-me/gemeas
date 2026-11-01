@@ -5,15 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { DemoCoachNotice } from '@/data/backend'
 import { CHAT_MAX_CHARS, LIMITS } from '@/data/rules'
-import { sendChat } from '@/data/store'
-import type { ChatMessage } from '@/data/types'
-import { useChatMessages } from '@/hooks/use-data'
+import { sendChat, write } from '@/data/store'
+import type { ChatMessage, Proposal } from '@/data/types'
+import { useChatMessages, useChatProposals } from '@/hooks/use-data'
+import { placeProposals } from '@/lib/chat-items'
 import { useToday } from '@/lib/clock'
 import { appDay } from '@/lib/dates'
 import { relativeDay } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const SUGGESTIONS = ['Cosa faccio oggi?', 'Come sta andando il piede?', 'Quante camminate ho fatto?']
+const SUGGESTIONS = ['Cosa faccio oggi?', 'Come sta andando il piede?', 'Facciamo il punto della settimana?']
 const TALLEST_BOX = 160 // px; a longer message scrolls inside the box
 const NEAR_END = 120 // px
 
@@ -33,12 +34,55 @@ function Bubble({ role, children }: { role: ChatMessage['role']; children: strin
   )
 }
 
+const DECIDED: Record<string, string> = {
+  applied: 'Applicata: il piano è aggiornato.',
+  declined: 'Non applicata.',
+  stale: 'Non applicata: nel frattempo il piano è cambiato. Chiedi di nuovo al coach.',
+  replaced: 'Sostituita da una proposta più recente.',
+}
+
+// What the coach proposes: the plan changes only with Applica
+function ProposalCard({ proposal }: { proposal: Proposal }) {
+  const [busy, setBusy] = useState(false)
+  const pending = proposal.status === 'pending'
+  const decide = async (apply: boolean) => {
+    setBusy(true)
+    await write.decideProposal(proposal.id, apply)
+    setBusy(false)
+  }
+  return (
+    <section className={cn('box', pending && 'shadow-[4px_4px_0_var(--ink)]')} aria-label="Proposta del coach">
+      <p className="text-[17px] font-bold">{proposal.summary}</p>
+      <ul className="flex flex-col gap-1.5 text-sm">
+        {proposal.lines.map((line, i) => (
+          <li key={i} className="wrap-anywhere">
+            {line}
+          </li>
+        ))}
+      </ul>
+      {pending ? (
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" className="h-11" disabled={busy} onClick={() => void decide(false)}>
+            No
+          </Button>
+          <Button className="h-11" disabled={busy} onClick={() => void decide(true)}>
+            Applica
+          </Button>
+        </div>
+      ) : (
+        <p className="text-sm font-bold">{DECIDED[proposal.status] ?? proposal.status}</p>
+      )}
+    </section>
+  )
+}
+
 // The chat with the coach. Saved messages come from the backend; the one being sent and
 // its reply show here until they are saved. The box stays above the tab bar, in the flow
 // of the page, so the phone's keyboard can push it up by itself.
 export function CoachChat() {
   const today = useToday()
   const messages = useChatMessages()
+  const proposals = useChatProposals().data
   const [text, setText] = useState(kept.draft)
   const [sending, setSending] = useState(false)
   const [failed, setFailed] = useState<string | null>(null)
@@ -50,6 +94,7 @@ export function CoachChat() {
   // stays until the saved messages include this exchange, so nothing flashes away
   const last = saved?.at(-1)
   const showPending = pending && !(last && last.id !== pending.lastId && last.role === 'coach')
+  const cards = placeProposals(saved ?? [], proposals ?? [])
 
   useEffect(() => {
     kept.draft = text
@@ -74,7 +119,7 @@ export function CoachChat() {
 
   useLayoutEffect(() => {
     if (followEnd.current) window.scrollTo(0, document.documentElement.scrollHeight)
-  }, [saved?.length, pending?.reply, failed])
+  }, [saved?.length, proposals?.length, pending?.reply, failed])
 
   const send = async () => {
     const message = text.trim()
@@ -107,7 +152,7 @@ export function CoachChat() {
         {!messages.error && !saved && <CardSkeleton />}
         {saved?.length === 0 && !showPending && (
           <EmptyNote title="Scrivi al tuo coach">
-            Può guardare il tuo piano e i tuoi dati, ma per ora non può cambiare il piano.
+            Guarda il tuo piano e i tuoi dati, e può proporti delle modifiche: il piano cambia solo se tocchi Applica.
           </EmptyNote>
         )}
         {saved?.length === 0 && !showPending && (
@@ -126,9 +171,15 @@ export function CoachChat() {
             <div key={m.id} className="flex flex-col gap-3">
               {newDay && <span className="self-center font-mono text-xs text-muted-foreground">{relativeDay(day, today)}</span>}
               <Bubble role={m.role}>{m.text}</Bubble>
+              {cards.under.get(m.id)?.map((p) => (
+                <ProposalCard key={p.id} proposal={p} />
+              ))}
             </div>
           )
         })}
+        {cards.atEnd.map((p) => (
+          <ProposalCard key={p.id} proposal={p} />
+        ))}
         {showPending && (
           <>
             <Bubble role="user">{pending.text}</Bubble>

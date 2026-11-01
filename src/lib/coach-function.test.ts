@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { CHAT_MAX_CHARS } from '@/data/rules'
+import { EXERCISES as CATALOG } from '@/exercises/catalog'
 import { PAIN_LEVELS, painLabel } from '@/lib/pain'
-import { appMoment, MAX_CHARS, needsNewThread, painWord, period, runTool, systemPrompt, TOOLS, userBlocks, visibleText, type Reader } from '../../supabase/functions/_shared/coach.ts'
+import { appMoment, decisionNotes, EXERCISES, linesOf, MAX_CHARS, needsNewThread, painWord, period, prepareProposal, runTool, systemPrompt, TOOLS, userBlocks, visibleText, type Change, type Reader } from '../../supabase/functions/_shared/coach.ts'
 
 // A pretend database: remembers what was asked, and answers with the rows it was given
 function fakeDb(rows: unknown[] = [], error: { message: string } | null = null) {
@@ -37,7 +38,7 @@ const WEEK = { from: '2026-11-02', to: '2026-11-08' }
 describe('what the coach can read', () => {
   it('never reads the weight, a whole Garmin answer or another schema', async () => {
     const { reader, asked } = fakeDb()
-    for (const tool of TOOLS) await runTool(tool.name, WEEK, reader)
+    for (const tool of TOOLS) if (tool.name !== 'propose_changes') await runTool(tool.name, WEEK, reader)
     expect(asked.map((a) => a.table).sort()).toEqual(['activities', 'plan_sessions', 'reviews', 'symptoms', 'tests', 'videos'])
     for (const a of asked) {
       expect(a.table).not.toContain('.')
@@ -46,8 +47,8 @@ describe('what the coach can read', () => {
     }
   })
 
-  it('has no tool that writes', () => {
-    for (const tool of TOOLS) expect(tool.name).toMatch(/^(get|search)_/)
+  it('has no tool that writes: at most it proposes', () => {
+    for (const tool of TOOLS) expect(tool.name).toMatch(/^(get|search|propose)_/)
   })
 
   it('gives pain as a word, the same words as the app', async () => {
@@ -100,6 +101,108 @@ describe('what the coach can read', () => {
     expect(calls.ilike).toEqual(['title', '%100\\%\\_%'])
     expect(calls.lte).toEqual(['duration_s', 900])
     expect(calls.limit).toEqual([20])
+  })
+})
+
+describe('proposals', () => {
+  const TODAY = '2026-11-04' // a Wednesday
+  const SESSION = { id: 's1', date: '2026-11-05', slot: 'pm', position: 1, kind: 'trainer', title: 'Lezione', instructions: 'Online.', exercises: [], video_ids: [], session_logs: null }
+  const BEFORE = { date: '2026-11-05', slot: 'pm', position: 1, kind: 'trainer', title: 'Lezione', instructions: 'Online.', exercises: [], video_ids: [] }
+
+  // Answers each table with its own rows
+  const reader = (tables: Record<string, unknown[]>) =>
+    ({
+      from(table: string) {
+        return {
+          select() {
+            const query: unknown = new Proxy(
+              {},
+              { get: (_, name: string) => (name === 'then' ? (done: (r: unknown) => void) => done({ data: tables[table] ?? [], error: null }) : () => query) },
+            )
+            return query
+          },
+        }
+      },
+    }) as unknown as Reader
+  const db = reader({ plan_sessions: [SESSION], videos: [{ yt_id: 'v1' }] })
+  const prepare = (changes: unknown, from = db) => prepareProposal({ summary: 'Sposta la lezione', changes }, from, TODAY)
+
+  it('uses the same exercises as the app', () => {
+    expect(EXERCISES).toEqual(CATALOG.map((e) => e.slug))
+  })
+
+  it('moves a session, keeping how it was so that Applica can compare', async () => {
+    const { changes, lines } = await prepare([{ action: 'change', session_id: 's1', date: '2026-11-06' }])
+    expect(changes).toEqual([{ op: 'change', session_id: 's1', before: BEFORE, after: { ...BEFORE, date: '2026-11-06' } }])
+    expect(lines).toEqual(['Sposta «Lezione»: gio 5 nov sera → ven 6 nov sera'])
+  })
+
+  it('never carries the log into the change', async () => {
+    const { changes } = await prepare([{ action: 'remove', session_id: 's1' }])
+    expect(JSON.stringify(changes)).not.toContain('session_logs')
+  })
+
+  it('adds a session, in lower case, with sensible defaults', async () => {
+    const { changes, lines } = await prepare([{ action: 'add', date: TODAY, slot: 'am', kind: 'Mobility', title: 'Stretching', instructions: 'Con calma.', video_ids: ['v1'] }])
+    expect(changes).toEqual([{ op: 'add', after: { date: TODAY, slot: 'am', position: 1, kind: 'mobility', title: 'Stretching', instructions: 'Con calma.', exercises: [], video_ids: ['v1'] } }])
+    expect(lines).toEqual(['Aggiungi mer 4 nov mattina, «Stretching»: Con calma.'])
+  })
+
+  it('writes the weekly note, keeping what it does not change', async () => {
+    const withNote = reader({ reviews: [{ week_start: '2026-11-09', summary: 'Bene.', decisions: 'Vecchio.' }] })
+    const { changes, lines } = await prepare([{ action: 'note', week_start: '2026-11-09', decisions: 'Con calma.' }], withNote)
+    expect(changes).toEqual([{ op: 'note', before: { summary: 'Bene.', decisions: 'Vecchio.' }, after: { week_start: '2026-11-09', summary: 'Bene.', decisions: 'Con calma.' } }])
+    expect(lines).toEqual(['Nota della settimana del lun 9 nov: Con calma.'])
+  })
+
+  it.each([
+    ['an unknown session', { action: 'change', session_id: 'nope', date: '2026-11-06' }, 'not found'],
+    ['an unknown exercise', { action: 'change', session_id: 's1', exercises: ['plank'] }, 'unknown exercise plank'],
+    ['a video not in her list', { action: 'change', session_id: 's1', video_ids: ['nope'] }, 'not in her list'],
+    ['a slot that does not exist', { action: 'change', session_id: 's1', slot: 'noon' }, 'slot must be'],
+    ['a date in the past', { action: 'change', session_id: 's1', date: '2026-11-01' }, 'date must be between'],
+    ['a date too far ahead', { action: 'change', session_id: 's1', date: '2028-01-01' }, 'date must be between'],
+    ['a new session with no title', { action: 'add', date: TODAY, slot: 'am', kind: 'foot' }, 'title is missing'],
+    ['a change of nothing', { action: 'change', session_id: 's1' }, 'changes nothing'],
+    ['a note on a day that is not Monday', { action: 'note', week_start: '2026-11-10', decisions: 'x' }, 'must be a Monday'],
+    ['a note for a past week', { action: 'note', week_start: '2026-10-26', decisions: 'x' }, 'in the past'],
+    ['an empty note', { action: 'note', week_start: '2026-11-09' }, 'summary or decisions'],
+    ['an unknown action', { action: 'delete_all' }, 'unknown action'],
+  ])('refuses %s, and says why', async (_, change, problem) => {
+    const { problems, changes } = await prepare([change])
+    expect(problems?.join()).toContain(problem)
+    expect(changes).toBeUndefined()
+  })
+
+  it('accepts a note for this week', async () => {
+    expect((await prepare([{ action: 'note', week_start: '2026-11-02', decisions: 'x' }])).problems).toBeUndefined()
+  })
+
+  it('does not touch the past or what she logged', async () => {
+    const past = reader({ plan_sessions: [{ ...SESSION, date: '2026-11-01' }] })
+    expect((await prepare([{ action: 'change', session_id: 's1', date: '2026-11-06' }], past)).problems?.join()).toContain('in the past')
+    const logged = reader({ plan_sessions: [{ ...SESSION, session_logs: { id: 'l' } }] })
+    expect((await prepare([{ action: 'remove', session_id: 's1' }], logged)).problems?.join()).toContain('has a log')
+    expect((await prepare([{ action: 'change', session_id: 's1', date: '2026-11-06' }], logged)).problems).toBeUndefined()
+  })
+
+  it('refuses the same session twice, too many changes, an empty proposal', async () => {
+    const twice = { action: 'change', session_id: 's1', date: '2026-11-06' }
+    expect((await prepare([twice, twice])).problems?.join()).toContain('twice')
+    expect((await prepare(Array.from({ length: 31 }, () => twice))).problems?.join()).toContain('at most')
+    expect((await prepare([])).problems?.join()).toContain('empty')
+    expect((await prepareProposal({ changes: [twice] }, db, TODAY)).problems?.join()).toContain('summary')
+  })
+
+  it('writes one line for each thing that changes', () => {
+    const change: Change = { op: 'change', session_id: 's1', before: BEFORE, after: { ...BEFORE, date: '2026-11-06', title: 'Nuova', instructions: 'Sì.', exercises: ['banded_inversion'] } }
+    expect(linesOf(change)).toEqual(['Sposta «Lezione»: gio 5 nov sera → ven 6 nov sera', 'Cambia «Lezione» in «Nuova»: Sì. (esercizi o video nuovi)'])
+    expect(linesOf({ op: 'remove', session_id: 's1', before: BEFORE })).toEqual(['Togli «Lezione», gio 5 nov sera'])
+  })
+
+  it('tells the coach what she decided', () => {
+    expect(decisionNotes([{ summary: 'A', status: 'applied' }, { summary: 'B', status: 'stale' }])).toEqual(['Proposta "A": applicata.', 'Proposta "B": non applicata, perché nel frattempo il piano era cambiato.'])
+    expect(userBlocks('Ciao', 'Oggi.', [], ['Proposta "A": applicata.'])[0].text).toBe('Oggi.\nProposta "A": applicata.')
   })
 })
 

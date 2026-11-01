@@ -9,7 +9,7 @@ import { getPref, setPref } from '@/lib/prefs'
 //   race. When a write is done, only the screens that read the tables it touched
 //   reload. If saving fails, a short message says so (and the screens reload, so they
 //   show what is really saved).
-export type Table = 'plan_sessions' | 'session_logs' | 'symptoms' | 'activities' | 'tests' | 'weights' | 'reviews' | 'videos' | 'chat_messages'
+export type Table = 'plan_sessions' | 'session_logs' | 'symptoms' | 'activities' | 'tests' | 'weights' | 'reviews' | 'videos' | 'chat_messages' | 'chat_proposals'
 
 const listeners = new Set<(tables: Set<Table>) => void>()
 
@@ -38,6 +38,7 @@ export const READS = {
   oldestActivityDate: ['activities'],
   review: ['reviews'],
   chatMessages: ['chat_messages'],
+  chatProposals: ['chat_proposals'],
 } satisfies Partial<Record<keyof Backend, Table[]>>
 
 // What each write touches
@@ -52,6 +53,7 @@ const WRITES = {
   saveWeight: ['weights'],
   addWalk: ['activities'],
   removeWalk: ['activities'],
+  decideProposal: ['chat_proposals', 'plan_sessions', 'symptoms', 'tests', 'reviews'],
 } satisfies Partial<Record<keyof Backend, Table[]>>
 
 export const data = {
@@ -68,6 +70,7 @@ export const data = {
   review: backend.review,
   coachAvailable: backend.coachAvailable,
   chatMessages: backend.chatMessages,
+  chatProposals: backend.chatProposals,
 } satisfies Partial<Backend>
 
 // One write at a time
@@ -114,6 +117,7 @@ export const write = {
   saveWeight: save('saveWeight', 'Peso non salvato'),
   addWalk: save('addWalk', 'Camminata non salvata'),
   removeWalk: save('removeWalk', 'Camminata non rimossa'),
+  decideProposal: save('decideProposal', 'Proposta non salvata'),
 }
 
 // A message to the coach. Not one of the writes above: the reply can take a while, and
@@ -127,7 +131,7 @@ export async function sendChat(text: string, onReply: (soFar: string) => void): 
     const offline = typeof navigator !== 'undefined' && !navigator.onLine
     return offline ? 'Sembra che tu sia offline.' : e instanceof Error ? e.message : 'Il messaggio non è partito.'
   } finally {
-    changed(['chat_messages'])
+    changed(['chat_messages', 'chat_proposals'])
   }
 }
 
@@ -148,5 +152,5 @@ export async function syncWatch() {
 
 // Everything may have changed elsewhere (the coach): reload all
 export function refreshAll() {
-  changed(['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos', 'chat_messages'])
+  changed(['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos', 'chat_messages', 'chat_proposals'])
 }
