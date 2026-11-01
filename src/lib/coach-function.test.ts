@@ -174,6 +174,41 @@ describe('proposals', () => {
     expect(changes).toBeUndefined()
   })
 
+  describe('every session has something to follow', () => {
+    const add = { action: 'add', date: TODAY, slot: 'am', title: 'Seduta' }
+
+    it('refuses a new session with only words', async () => {
+      const { problems } = await prepare([{ ...add, kind: 'mobility', instructions: 'Stretching a memoria.' }])
+      expect(problems?.join()).toContain('needs a video')
+    })
+
+    it('wants drawn figures in a pill: a video is not enough', async () => {
+      expect((await prepare([{ ...add, kind: 'pill', video_ids: ['v1'] }])).problems?.join()).toContain('a pill needs')
+      expect((await prepare([{ ...add, kind: 'pill', exercises: ['banded_inversion'] }])).problems).toBeUndefined()
+    })
+
+    it('accepts a video or figures, and a lesson with neither', async () => {
+      expect((await prepare([{ ...add, kind: 'mobility', video_ids: ['v1'] }])).problems).toBeUndefined()
+      expect((await prepare([{ ...add, kind: 'foot', exercises: ['banded_inversion'] }])).problems).toBeUndefined()
+      expect((await prepare([{ ...add, kind: 'trainer' }])).problems).toBeUndefined()
+    })
+
+    it('refuses taking away the only content, but lets an old session move', async () => {
+      const old = reader({ plan_sessions: [{ ...SESSION, kind: 'mobility', video_ids: ['v1'] }], videos: [{ yt_id: 'v1' }] })
+      expect((await prepare([{ action: 'change', session_id: 's1', video_ids: [] }], old)).problems?.join()).toContain('needs a video')
+      const bare = reader({ plan_sessions: [{ ...SESSION, kind: 'mobility' }] })
+      expect((await prepare([{ action: 'change', session_id: 's1', date: '2026-11-06' }], bare)).problems).toBeUndefined()
+    })
+
+    it('searches videos by length', async () => {
+      const { reader: videos, asked } = fakeDb()
+      await runTool('search_videos', { min_minutes: 8, max_minutes: 12 }, videos)
+      const calls = Object.fromEntries(asked[0].calls)
+      expect(calls.gte).toEqual(['duration_s', 480])
+      expect(calls.lte).toEqual(['duration_s', 720])
+    })
+  })
+
   it('accepts a note for this week', async () => {
     expect((await prepare([{ action: 'note', week_start: '2026-11-02', decisions: 'x' }])).problems).toBeUndefined()
   })

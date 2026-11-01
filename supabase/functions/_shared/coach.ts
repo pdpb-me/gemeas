@@ -51,6 +51,7 @@ How the plan is built:
 - slot is am (Mattina) or pm (Sera). position orders sessions in one slot, lowest first: a pill goes before (0) or after (2) a workout (1).
 - title is short. instructions are one or two sentences: what to do today, with sets, reps and holds, using the pain words: "Lieve va bene; fermati sopra Lieve."
 - exercises are drawn figures, by name: ball_squeeze_heel_raise (3 × 15), sl_heel_raise_step (3 × 8–12 per side), banded_inversion (3 × 15), sl_heel_hold_towel (3 × 30 s per side), sl_heel_raise_test (one-leg heel raises to fatigue, left then right; only in a test session).
+- Every session needs something to follow, except a trainer lesson: a pill always has drawn figures; any other session has a video, or drawn figures when they fit. So before you propose a session, search the videos for one that matches what she asked, close to the length she wants. Titles are mostly in English: search by tags and by one English word (stretch, hips, calf). If nothing fits, tell her instead of proposing a session with nothing in it.
 - A weekly note has a week_start, the Monday of the week it is for. decisions: 1–3 short sentences for that week. summary: how the week before went.
 
 Videos:
@@ -148,6 +149,7 @@ export const TOOLS = [
       properties: {
         tags: { type: 'array', items: { type: 'string' }, description: 'Any of: foot, pilates, yoga, barre, strength, band, cardio, mobility, stretch, warmup, cooldown, core, upper, lower, back, full-body, beginner, gentle, no-equipment, running' },
         text: { type: 'string', description: 'A word in the title' },
+        min_minutes: { type: 'number', description: 'The shortest video to show' },
         max_minutes: { type: 'number', description: 'The longest video to show' },
       },
       additionalProperties: false,
@@ -289,9 +291,10 @@ const READERS: Record<string, (db: Reader, input: Record<string, unknown>) => Pr
 
   async search_videos(db, input) {
     let query = db.from('videos').select('yt_id, title, duration_s, tags, notes, flags').eq('available', true)
-    const { tags, text, max_minutes } = input
+    const { tags, text, min_minutes, max_minutes } = input
     if (Array.isArray(tags) && tags.length) query = query.overlaps('tags', tags.filter((t) => typeof t === 'string').slice(0, 20))
     if (typeof text === 'string' && text.trim()) query = query.ilike('title', `%${text.trim().slice(0, 60).replace(/[%_\\]/g, '\\$&')}%`)
+    if (typeof min_minutes === 'number' && min_minutes > 0) query = query.gte('duration_s', Math.round(min_minutes * 60))
     if (typeof max_minutes === 'number' && max_minutes > 0) query = query.lte('duration_s', Math.round(max_minutes * 60))
     return rows(await query.order('duration_s').limit(MAX_VIDEOS))
   },
@@ -393,6 +396,13 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
       for (const v of s.video_ids) if (!inLibrary.has(v)) problems.push(`${label}: video ${v} is not in her list`)
     }
 
+    // Something to follow: a session with only words is no use on the day
+    const checkContent = (s: Session, label: string) => {
+      if (s.kind === 'trainer') return
+      if (s.kind === 'pill' && !s.exercises.length) problems.push(`${label}: a pill needs drawn exercises`)
+      else if (!s.exercises.length && !s.video_ids.length) problems.push(`${label}: this session needs a video from search_videos, or drawn exercises`)
+    }
+
     items.forEach((c, i) => {
       const label = `change ${i + 1}`
       if (c.action === 'add') {
@@ -407,6 +417,7 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
           video_ids: lists(c.video_ids) ?? [],
         }
         checkSession(after, label)
+        checkContent(after, label)
         result.push({ op: 'add', after })
       } else if (c.action === 'change' || c.action === 'remove') {
         const id = c.session_id
@@ -436,6 +447,8 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
           video_ids: lists(c.video_ids) ?? before.video_ids,
         }
         checkSession(after, label)
+        // Just moving a session doesn't call for new content
+        if (c.kind !== undefined || c.exercises !== undefined || c.video_ids !== undefined) checkContent(after, label)
         const change: Change = { op: 'change', session_id: id, before, after }
         if (!linesOf(change).length && before.position === after.position) problems.push(`${label}: this changes nothing`)
         result.push(change)
