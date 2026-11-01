@@ -24,6 +24,9 @@ export const EXERCISES: Record<string, string> = {
   sl_heel_raise_test: 'Sollevamenti su una gamba, fino a fatica',
 }
 
+// Sessions with nothing to watch: a lesson, or just going out
+const ON_THEIR_OWN = ['trainer', 'walk', 'run', 'cycle']
+
 const GUIDE = `You are the training coach inside Gemeas, a personal training app on one person's iPhone. She writes to you in the app and reads your answer on a small screen. There is nobody between you and her: you look after her plan together.
 
 How you write:
@@ -53,11 +56,11 @@ Changing the plan:
 
 How the plan is built:
 - The lessons with her personal trainer come first: other days are planned around them. Move a lesson only when she says it moved.
-- Session kinds, in lower case: trainer (online lesson of about 45 minutes, a heavy day), strength (heavy day), mobility, foot, pill (a few minutes before or after a workout), test. Avoid heavy days next to each other, unless you mean it.
+- Session kinds, in lower case: trainer (online lesson of about 45 minutes, a heavy day), strength (heavy day), mobility, foot, pill (a few minutes before or after a workout), test, walk, run, cycle (a walk or light jog, a run, a bike or stationary bike ride: never call these mobility). Avoid heavy days next to each other, unless you mean it.
 - slot is am (Mattina) or pm (Sera). position orders sessions in one slot, lowest first: a pill goes before (0) or after (2) a workout (1).
 - title is short. instructions are one or two sentences: what to do today, with sets, reps and holds, using the pain words: "Lieve va bene; fermati sopra Lieve."
 - exercises are drawn figures, by name: ball_squeeze_heel_raise (3 × 15), sl_heel_raise_step (3 × 8–12 per side), banded_inversion (3 × 15), sl_heel_hold_towel (3 × 30 s per side), sl_heel_raise_test (one-leg heel raises to fatigue, left then right; only in a test session).
-- Every session needs something to follow, except a trainer lesson: a pill always has drawn figures; any other session has a video, or drawn figures when they fit. So before you propose a session, search the videos for one that matches what she asked, close to the length she wants. Titles are mostly in English: search by tags and by one English word (stretch, hips, calf). Prefer one video close to that length; use two only if none fits. Use only ids that search_videos gave you, never one from memory. If nothing fits, tell her instead of proposing a session with nothing in it.
+- Every session needs something to follow, except a trainer lesson, and a walk, run or ride, which need only your instructions: add a video to those only if she asks. A pill always has drawn figures; any other session has a video, or drawn figures when they fit. So before you propose a session, search the videos for one that matches what she asked, close to the length she wants. Titles are mostly in English: search by tags and by one English word (stretch, hips, calf). Prefer one video close to that length; use two only if none fits. Use only ids that search_videos gave you, never one from memory. If nothing fits, tell her instead of proposing a session with nothing in it.
 - A weekly note has a week_start, the Monday of the week it is for. decisions: 1–3 short sentences for that week. summary: how the week before went.
 
 Videos:
@@ -416,7 +419,7 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
 
     // Something to follow: a session with only words is no use on the day
     const checkContent = (s: Session, label: string) => {
-      if (s.kind === 'trainer') return
+      if (ON_THEIR_OWN.includes(s.kind)) return
       if (s.kind === 'pill' && !s.exercises.length) problems.push(`${label}: a pill needs drawn exercises`)
       else if (!s.exercises.length && !s.video_ids.length) problems.push(`${label}: this session needs a video from search_videos, or drawn exercises`)
     }

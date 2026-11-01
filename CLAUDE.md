@@ -51,7 +51,7 @@ Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
 ## Data words
 
-- Session kinds (free text from the coach, lower case): `trainer`, `strength`, `mobility`, `foot`, `pill`, `test`. `position` orders a pill before or after a workout in the same slot. Pills stay out of the week's dots and counts.
+- Session kinds (free text from the coach, lower case): `trainer`, `strength`, `mobility`, `foot`, `pill`, `test`, `walk`, `run`, `cycle`. `position` orders a pill before or after a workout in the same slot. Pills stay out of the week's dots and counts.
 - `session_logs.effort`: `light`, `medium`, `hard`, asked after `trainer` sessions.
 - Foot: `body_area 'foot'`, `side 'R'`, in one place (`FOOT` in `rules.ts`), so it can become per person. Morning answer: `timing 'next_morning'`. Pain: 5 words stored as 0/2/5/8/10 (Nessuno, Lieve, Medio, Forte, Massimo).
 - Activities: `sport 'walk'` and others. `source 'manual'` is typed in; `source 'garmin'` comes from the watch through the server function `gemeas-garmin-sync` (Garmin's Personal API, one key per person in the Supabase secret `GEMEAS_GARMIN_KEYS`; keys expire, at most after a year). It runs when the app opens, at most once an hour, and every night from `.github/workflows/garmin-sync.yml`. Never store Garmin's whole answer: it holds the owner's name and GPS points.

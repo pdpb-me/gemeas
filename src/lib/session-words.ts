@@ -13,6 +13,9 @@ const KIND_WORD: Record<string, string> = {
   foot: 'Piede',
   pill: 'Pillola',
   test: 'Test',
+  walk: 'Camminata',
+  run: 'Corsa',
+  cycle: 'Bici',
 }
 export const kindWord = (kind: string) => KIND_WORD[kind] ?? capitalize(kind)
 

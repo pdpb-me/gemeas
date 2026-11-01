@@ -224,6 +224,7 @@ function Day({
               sessions={day.sessions}
               date={date}
               today={today}
+              calm={!footSore}
               onOpen={(id, openLog) => nav.push({ kind: 'session', id, openLog })}
               onStatus={day.setStatus}
             />

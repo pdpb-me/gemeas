@@ -1,10 +1,12 @@
 import { toast } from 'sonner'
+import { Dachshunds } from '@/components/dachshunds'
 import { LogSummary } from '@/components/log-summary'
 import { RowArrow, StatusMark } from '@/components/status-mark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { isPill } from '@/data/rules'
 import type { DaySession, Status } from '@/data/types'
+import { dogForSport } from '@/lib/dachshunds'
 import { asksEffort } from '@/lib/effort'
 import { plural } from '@/lib/format'
 import { kindWord, sessionMeta, SLOT_WORD } from '@/lib/session-words'
@@ -71,12 +73,14 @@ export function PlanList({
   sessions,
   date,
   today,
+  calm,
   onOpen,
   onStatus,
 }: {
   sessions: DaySession[]
   date: string
   today: string
+  calm: boolean
   onOpen: (id: string, openLog?: boolean) => void
   onStatus: (session: DaySession, status: Status | null) => Promise<boolean>
 }) {
@@ -111,7 +115,10 @@ export function PlanList({
           )}
         </div>
       </div>
-      {sessions.map((s) => (
+      {sessions.map((s) => {
+        // the twins stay away from a sore foot
+        const pose = calm && (sessionPain(s).score ?? 0) < 5 ? dogForSport(s.kind) : null
+        return (
         <div key={s.id} className="flex flex-col gap-2 border-t px-4 py-3">
           <button
             type="button"
@@ -130,11 +137,13 @@ export function PlanList({
                 <span className="line-clamp-2 text-sm text-muted-foreground">{sessionMeta(s)}</span>
               )}
             </span>
+            {pose && <Dachshunds pose={pose} solo className="w-16 shrink-0" />}
             <RowArrow />
           </button>
           {canLog && !s.log && <QuickLog session={s} onStatus={(st) => onStatus(s, st)} onOpen={() => onOpen(s.id)} />}
         </div>
-      ))}
+        )
+      })}
     </Card>
   )
 }

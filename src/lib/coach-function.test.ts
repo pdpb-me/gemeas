@@ -193,6 +193,10 @@ describe('proposals', () => {
       expect((await prepare([{ ...add, kind: 'trainer' }])).problems).toBeUndefined()
     })
 
+    it.each(['walk', 'run', 'cycle'])('lets a %s go without a video', async (kind) => {
+      expect((await prepare([{ ...add, kind, instructions: 'Passo comodo.' }])).problems).toBeUndefined()
+    })
+
     it('refuses taking away the only content, but lets an old session move', async () => {
       const old = reader({ plan_sessions: [{ ...SESSION, kind: 'mobility', video_ids: ['v1'] }], videos: [{ yt_id: 'v1' }] })
       expect((await prepare([{ action: 'change', session_id: 's1', video_ids: [] }], old)).problems?.join()).toContain('needs a video')

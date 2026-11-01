@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import type { DaySession } from '@/data/types'
 import { dogForSport, soloSvg, twinsSvg, type DogPose } from '@/lib/dachshunds'
+import { sessionMinutes } from '@/lib/session-time'
 
 const POSES: DogPose[] = ['stretch', 'plank', 'lift', 'bridge', 'sit', 'ball', 'walk', 'run', 'cycle', 'rest', 'highfive']
 
@@ -38,5 +40,12 @@ describe('the twin dachshunds', () => {
     ['hike', null],
   ])('goes with %s: %s', (sport, pose) => {
     expect(dogForSport(sport)).toBe(pose)
+  })
+
+  it.each(['walk', 'run', 'cycle'])('goes with the session kind %s, whose length is not the video’s', (kind) => {
+    expect(dogForSport(kind)).toBe(kind)
+    const session = { kind, exercises: [], videos: [{ duration_s: 660 }] } as unknown as DaySession
+    expect(sessionMinutes(session)).toBeNull()
+    expect(sessionMinutes({ ...session, kind: 'mobility' })).toBe(11)
   })
 })

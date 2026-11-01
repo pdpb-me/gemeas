@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CalendarArrowUpIcon, InfoIcon, PlayIcon, TriangleAlertIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { Dachshunds } from '@/components/dachshunds'
 import { ExerciseFigure } from '@/components/exercise-figure'
 import { LogSheet } from '@/components/log-sheet'
 import { LogSummary } from '@/components/log-summary'
@@ -13,6 +14,7 @@ import { Card } from '@/components/ui/card'
 import type { DaySession, Effort, Status, Video } from '@/data/types'
 import { exerciseFor } from '@/exercises/catalog'
 import { useCheckIns } from '@/hooks/use-check-ins'
+import { dogForSport } from '@/lib/dachshunds'
 import { asksEffort } from '@/lib/effort'
 import { painLabel } from '@/lib/pain'
 import { dayLabel, duration, relativeDay } from '@/lib/format'
@@ -93,7 +95,9 @@ export function SessionScreen({
   const [moveOpen, setMoveOpen] = useState(false)
   const exercises = session.exercises.filter((slug) => exerciseFor(slug))
   const test = testFor(session.exercises)
-  const { area } = sessionPain(session)
+  const { area, score } = sessionPain(session)
+  // the twins stay away from a sore foot, and never take the place of the figures
+  const pose = !exercises.length && (todayFoot ?? 0) < 5 && (score ?? 0) < 5 ? dogForSport(session.kind) : null
   const minutes = sessionMinutes(session)
   const future = session.date > today
   const hasDetails = !!area || asksEffort(session.kind)
@@ -145,6 +149,12 @@ export function SessionScreen({
                 : 'Vai piano, e fermati se supera Lieve.'}
             </span>
           </p>
+        )}
+
+        {pose && (
+          <Card className="items-center px-4 py-4">
+            <Dachshunds pose={pose} className="w-full max-w-64" />
+          </Card>
         )}
 
         {test && session.log?.status !== 'skipped' && !future && (

@@ -21,7 +21,7 @@ This file is public, so it holds no names, user ids or health details. Those are
 
 - The **personal trainer's lessons** come first: other days are planned around them, and the lessons can be cancelled or moved. Write them with kind `trainer`.
 - She can move a single session herself in the app; its logs move with it. A session on another day than planned is a deliberate move, not an error. She can also change the plan with the coach in the app, by applying its proposals: read the plan as it is now before you write.
-- Every session needs something to follow, except a trainer lesson: a pill always has drawn figures; any other session has a video, or figures when they fit. The coach in the app can't propose one without.
+- Every session needs something to follow, except a trainer lesson, and a walk, run or ride: a pill always has drawn figures; any other session has a video, or figures when they fit. The coach in the app can't propose one without.
 - You can't see videos, and nobody has watched them yet (see `videos`): you only have their titles. Say so when you choose one, and prefer the exercise figures for anything sensitive. Choose by what the session needs, from all the videos.
 
 ## Tables
@@ -50,6 +50,7 @@ This file is public, so it holds no names, user ids or health details. Those are
 | `foot` | Piede | Asks "Piede destro, durante". |
 | `pill` | Pillola | A few minutes before or after a workout. **Stays out of the week's dots and counts.** |
 | `test` | Test | Asks "Piede destro, durante". With `sl_heel_raise_test` in `exercises`, also shows Left / Right number boxes. |
+| `walk`, `run`, `cycle` | Camminata, Corsa, Bici | A walk or light jog, a run, a bike or stationary bike ride. Shows a twin dachshund, unless the foot is sore. Needs no video or figures. |
 
 **Valid exercise slugs** (from `src/exercises/catalog.ts`; a new one needs a code change):
 

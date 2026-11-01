@@ -3,10 +3,13 @@
 // the trainer: its usual length.
 import { exerciseFor } from '@/exercises/catalog'
 import type { DaySession } from '@/data/types'
+import { dogForSport } from '@/lib/dachshunds'
 
 const LESSON_MINUTES = 45
 
 export function sessionMinutes(s: DaySession): number | null {
+  // How long she goes out is up to her: a stretching video after it says nothing about that
+  if (dogForSport(s.kind)) return null
   let total = 0
   let known = false
   for (const slug of s.exercises) {
