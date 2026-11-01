@@ -124,11 +124,11 @@ describe('proposals', () => {
         }
       },
     }) as unknown as Reader
-  const db = reader({ plan_sessions: [SESSION], videos: [{ yt_id: 'v1' }] })
+  const db = reader({ plan_sessions: [SESSION], videos: [{ yt_id: 'v1', title: 'Stretch', duration_s: null }] })
   const prepare = (changes: unknown, from = db) => prepareProposal({ summary: 'Sposta la lezione', changes }, from, TODAY)
 
   it('uses the same exercises as the app', () => {
-    expect(EXERCISES).toEqual(CATALOG.map((e) => e.slug))
+    expect(EXERCISES).toEqual(Object.fromEntries(CATALOG.map((e) => [e.slug, e.name])))
   })
 
   it('moves a session, keeping how it was so that Applica can compare', async () => {
@@ -145,7 +145,7 @@ describe('proposals', () => {
   it('adds a session, in lower case, with sensible defaults', async () => {
     const { changes, lines } = await prepare([{ action: 'add', date: TODAY, slot: 'am', kind: 'Mobility', title: 'Stretching', instructions: 'Con calma.', video_ids: ['v1'] }])
     expect(changes).toEqual([{ op: 'add', after: { date: TODAY, slot: 'am', position: 1, kind: 'mobility', title: 'Stretching', instructions: 'Con calma.', exercises: [], video_ids: ['v1'] } }])
-    expect(lines).toEqual(['Aggiungi mer 4 nov mattina, «Stretching»: Con calma.'])
+    expect(lines).toEqual(['Aggiungi mer 4 nov mattina, «Stretching»: Con calma.', 'Video: Stretch'])
   })
 
   it('writes the weekly note, keeping what it does not change', async () => {
@@ -231,8 +231,28 @@ describe('proposals', () => {
 
   it('writes one line for each thing that changes', () => {
     const change: Change = { op: 'change', session_id: 's1', before: BEFORE, after: { ...BEFORE, date: '2026-11-06', title: 'Nuova', instructions: 'Sì.', exercises: ['banded_inversion'] } }
-    expect(linesOf(change)).toEqual(['Sposta «Lezione»: gio 5 nov sera → ven 6 nov sera', 'Cambia «Lezione» in «Nuova»: Sì. (esercizi o video nuovi)'])
+    expect(linesOf(change)).toEqual(['Sposta «Lezione»: gio 5 nov sera → ven 6 nov sera', 'Cambia «Lezione» in «Nuova»: Sì.', `Disegni: ${EXERCISES.banded_inversion}`])
     expect(linesOf({ op: 'remove', session_id: 's1', before: BEFORE })).toEqual(['Togli «Lezione», gio 5 nov sera'])
+  })
+
+  it('says on the card which video and figures she is accepting', async () => {
+    const library = reader({ videos: [{ yt_id: 'v1', title: 'Hip Stretch', duration_s: 610 }] })
+    const { lines } = await prepare([{ action: 'add', date: TODAY, slot: 'am', kind: 'foot', title: 'Seduta', video_ids: ['v1'], exercises: ['banded_inversion'] }], library)
+    expect(lines).toEqual(['Aggiungi mer 4 nov mattina, «Seduta»', 'Video: Hip Stretch (10 min)', `Disegni: ${EXERCISES.banded_inversion}`])
+  })
+
+  it('names only what is new when a session changes', async () => {
+    const library = reader({
+      plan_sessions: [{ ...SESSION, kind: 'mobility', video_ids: ['v1'] }],
+      videos: [{ yt_id: 'v1', title: 'Vecchio', duration_s: 300 }, { yt_id: 'v2', title: 'Nuovo', duration_s: 600 }],
+    })
+    const { lines } = await prepare([{ action: 'change', session_id: 's1', video_ids: ['v1', 'v2'] }], library)
+    expect(lines).toEqual(['Cambia «Lezione»', 'Video: Nuovo (10 min)'])
+  })
+
+  it('never shows an empty card when only the order changes', async () => {
+    const { lines } = await prepare([{ action: 'change', session_id: 's1', position: 3 }])
+    expect(lines).toEqual(['Cambia l’ordine di «Lezione», gio 5 nov sera'])
   })
 
   it('tells the coach what she decided', () => {

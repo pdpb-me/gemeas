@@ -1,7 +1,7 @@
 // The twin dachshunds: decoration for calm moments, drawn as SVG from constants.
 // Each dog is built from thick round strokes: an ink pass first, then the colours on top,
 // so the whole silhouette gets one outline. The colours (--dog-*) live in src/index.css.
-export type DogPose = 'stretch' | 'plank' | 'lift' | 'bridge' | 'sit' | 'ball' | 'walk' | 'rest' | 'highfive'
+export type DogPose = 'stretch' | 'plank' | 'lift' | 'bridge' | 'sit' | 'ball' | 'walk' | 'run' | 'cycle' | 'rest' | 'highfive'
 
 type Coat = { coat: string; far: string; ear: string; tan: string; brow: boolean }
 type Pose = {
@@ -11,8 +11,8 @@ type Pose = {
   far: string[]
   arm?: string[] // drawn over the head
   tail: string
-  head: { x: number; y: number; r: number; closed?: boolean }
-  prop?: 'bar' | 'ball'
+  head: { x: number; y: number; r: number; closed?: boolean; ear?: number }
+  prop?: 'bar' | 'ball' | 'bike'
   zz?: boolean
 }
 
@@ -83,6 +83,24 @@ const POSES: Record<Exclude<DogPose, 'highfive'>, Pose> = {
     tail: 'M160 74 Q178 58 180 38',
     head: { x: 46, y: 60, r: 6 },
   },
+  run: {
+    body: 'M62 72 Q105 60 150 74',
+    w: 28,
+    near: ['M70 80 L34 100', 'M146 82 L180 106'],
+    far: ['M84 80 L58 108', 'M132 84 L156 112'],
+    tail: 'M160 68 Q176 54 188 46',
+    head: { x: 48, y: 52, r: 8, ear: 30 },
+  },
+  cycle: {
+    body: 'M128 60 Q118 38 104 28',
+    w: 27,
+    near: ['M126 66 Q84 70 108 110'],
+    far: ['M118 62 Q78 58 92 86'],
+    arm: ['M104 36 L74 49'],
+    tail: 'M138 62 Q158 62 170 42',
+    head: { x: 94, y: 12, r: 6 },
+    prop: 'bike',
+  },
   rest: {
     body: 'M66 104 C68 66, 150 62, 152 100 C152 116, 110 118, 92 110',
     w: 24,
@@ -118,7 +136,7 @@ function head(h: Pose['head'], c: Coat) {
     `<circle r="15" fill="${c.coat}"/>${stroke('M-6 3 L-27 7', 13, c.coat)}${stroke('M-14 7 L-27 8', 7, c.tan)}` +
     `<circle cx="-33" cy="6" r="4" fill="${INK}"/>${eye}` +
     (c.brow ? `<circle cx="-9" cy="-10" r="2.4" fill="${c.tan}"/>` : '') +
-    `<ellipse cx="7" cy="8" rx="8.5" ry="16" transform="rotate(-8 7 8)" fill="${c.ear}" stroke="${INK}" stroke-width="${OUTLINE}"/></g>`
+    `<ellipse cx="7" cy="8" rx="8.5" ry="16" transform="rotate(${h.ear ?? -8} 7 8)" fill="${c.ear}" stroke="${INK}" stroke-width="${OUTLINE}"/></g>`
   )
 }
 
@@ -149,6 +167,15 @@ function prop(p: Pose) {
   if (p.prop === 'ball') return `<circle cx="42" cy="109" r="12" fill="var(--dog-mat)" stroke="${INK}" stroke-width="${OUTLINE}"/>`
   if (p.prop === 'bar')
     return `<rect x="52" y="12" width="96" height="5" fill="${INK}"/><rect x="46" y="1" width="9" height="27" fill="${INK}"/><rect x="145" y="1" width="9" height="27" fill="${INK}"/>`
+  // A stationary bike: base, flywheel, frame, handlebar, saddle, crank
+  if (p.prop === 'bike')
+    return (
+      `<rect x="58" y="116" width="96" height="5" fill="${INK}"/>` +
+      `<circle cx="66" cy="90" r="20" fill="var(--dog-mat)" stroke="${INK}" stroke-width="4"/><circle cx="66" cy="90" r="4" fill="${INK}"/>` +
+      `<path d="M66 90 L78 50 M100 98 L128 66 M100 98 L66 90 M128 116 L128 66 M100 98 L104 116" fill="none" stroke="${INK}" stroke-width="4"/>` +
+      `<path d="M66 50 L88 50 M116 64 L140 64" fill="none" stroke="${INK}" stroke-width="5"/>` +
+      `<path d="M108 110 L92 86" fill="none" stroke="${INK}" stroke-width="4"/>`
+    )
   return ''
 }
 

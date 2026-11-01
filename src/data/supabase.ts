@@ -418,10 +418,11 @@ export const backend: Backend = {
   // The server sends the reply as lines of JSON: { d: more text }, { reset: true } to start
   // the text again, { done: true } at the end, or { error: what to tell her }
   async sendChat(text, onReply) {
-    const { data } = await supabase.auth.getSession()
-    const before = (await chatMessages()).at(-1)?.id
+    let before: string | undefined
     let res: Response
     try {
+      const { data } = await supabase.auth.getSession()
+      before = (await chatMessages()).at(-1)?.id
       res = await fetch(`${SUPABASE_URL}/functions/v1/gemeas-coach-chat`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${data.session?.access_token}`, apikey: SUPABASE_PUBLISHABLE_KEY, 'Content-Type': 'application/json' },
@@ -460,6 +461,7 @@ export const backend: Backend = {
         }
       }
     } catch (e) {
+      if (e instanceof SyntaxError) throw new Error(COACH_DOWN) // never a technical message in the chat
       if (!(e instanceof TypeError)) throw e // a TypeError is the connection dropping
     }
     if (!finished) await waitForReply(before)

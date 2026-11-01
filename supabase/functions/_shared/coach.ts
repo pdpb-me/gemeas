@@ -15,8 +15,14 @@ const MAX_VIDEOS = 20
 const MAX_CHANGES = 30
 const MAX_DAYS_AHEAD = 120
 
-// The drawn figures (src/exercises/catalog.ts; a test keeps them the same)
-export const EXERCISES = ['ball_squeeze_heel_raise', 'sl_heel_raise_step', 'banded_inversion', 'sl_heel_hold_towel', 'sl_heel_raise_test']
+// The drawn figures, as the app names them (src/exercises/catalog.ts; a test keeps them the same)
+export const EXERCISES: Record<string, string> = {
+  ball_squeeze_heel_raise: 'Sollevamento talloni con pallina',
+  sl_heel_raise_step: 'Sollevamento su una gamba, sul gradino',
+  banded_inversion: 'Inversione del piede con elastico',
+  sl_heel_hold_towel: 'Tenuta su una gamba, sull’asciugamano',
+  sl_heel_raise_test: 'Sollevamenti su una gamba, fino a fatica',
+}
 
 const GUIDE = `You are the training coach inside Gemeas, a personal training app on one person's iPhone. She writes to you in the app and reads your answer on a small screen. There is nobody between you and her: you look after her plan together.
 
@@ -51,7 +57,7 @@ How the plan is built:
 - slot is am (Mattina) or pm (Sera). position orders sessions in one slot, lowest first: a pill goes before (0) or after (2) a workout (1).
 - title is short. instructions are one or two sentences: what to do today, with sets, reps and holds, using the pain words: "Lieve va bene; fermati sopra Lieve."
 - exercises are drawn figures, by name: ball_squeeze_heel_raise (3 × 15), sl_heel_raise_step (3 × 8–12 per side), banded_inversion (3 × 15), sl_heel_hold_towel (3 × 30 s per side), sl_heel_raise_test (one-leg heel raises to fatigue, left then right; only in a test session).
-- Every session needs something to follow, except a trainer lesson: a pill always has drawn figures; any other session has a video, or drawn figures when they fit. So before you propose a session, search the videos for one that matches what she asked, close to the length she wants. Titles are mostly in English: search by tags and by one English word (stretch, hips, calf). If nothing fits, tell her instead of proposing a session with nothing in it.
+- Every session needs something to follow, except a trainer lesson: a pill always has drawn figures; any other session has a video, or drawn figures when they fit. So before you propose a session, search the videos for one that matches what she asked, close to the length she wants. Titles are mostly in English: search by tags and by one English word (stretch, hips, calf). Prefer one video close to that length; use two only if none fits. Use only ids that search_videos gave you, never one from memory. If nothing fits, tell her instead of proposing a session with nothing in it.
 - A weekly note has a week_start, the Monday of the week it is for. decisions: 1–3 short sentences for that week. summary: how the week before went.
 
 Videos:
@@ -340,11 +346,22 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 const words = (value: unknown, max: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, max) : undefined)
 const lists = (value: unknown) => (Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : undefined)
 
+type VideoNames = Map<unknown, string>
+
+// What she'd follow, by name, so that she knows what she's accepting. Only what's new.
+function contentLines(after: Session, videos: VideoNames, before?: Session) {
+  const added = (now: string[], was: string[] = []) => now.filter((x) => !was.includes(x))
+  return [
+    ...added(after.video_ids, before?.video_ids).map((id) => `Video: ${videos.get(id) ?? id}`),
+    ...added(after.exercises, before?.exercises).map((slug) => `Disegni: ${EXERCISES[slug] ?? slug}`),
+  ]
+}
+
 // What the card shows
-export function linesOf(change: Change): string[] {
+export function linesOf(change: Change, videos: VideoNames = new Map()): string[] {
   if (change.op === 'add') {
     const how = change.after.instructions ? `: ${change.after.instructions}` : ''
-    return [`Aggiungi ${when(change.after)}, «${change.after.title}»${how}`]
+    return [`Aggiungi ${when(change.after)}, «${change.after.title}»${how}`, ...contentLines(change.after, videos)]
   }
   if (change.op === 'remove') return [`Togli «${change.before.title}», ${when(change.before)}`]
   if (change.op === 'note') return [`Nota della settimana del ${day(change.after.week_start)}: ${change.after.decisions ?? change.after.summary}`]
@@ -356,8 +373,9 @@ export function linesOf(change: Change): string[] {
   if (edited || media) {
     const name = before.title === after.title ? '' : ` in «${after.title}»`
     const how = before.instructions !== after.instructions && after.instructions ? `: ${after.instructions}` : ''
-    lines.push(`Cambia «${before.title}»${name}${how}${media ? ' (esercizi o video nuovi)' : ''}`)
+    lines.push(`Cambia «${before.title}»${name}${how}`, ...contentLines(after, videos, before))
   }
+  if (!lines.length && before.position !== after.position) lines.push(`Cambia l’ordine di «${before.title}», ${when(before)}`)
   return lines
 }
 
@@ -376,9 +394,9 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
   const weeks = items.map((c) => c.week_start).filter(isDay)
   try {
     const sessions = ids.length ? rows(await db.from('plan_sessions').select('id, date, slot, position, kind, title, instructions, exercises, video_ids, session_logs(id)').in('id', ids)) : []
-    const known = videos.length ? rows(await db.from('videos').select('yt_id').in('yt_id', videos)) : []
+    const known = videos.length ? rows(await db.from('videos').select('yt_id, title, duration_s').in('yt_id', videos)) : []
     const notes = weeks.length ? rows(await db.from('reviews').select('week_start, summary, decisions').in('week_start', weeks)) : []
-    const inLibrary = new Set(known.map((v) => v.yt_id))
+    const inLibrary: VideoNames = new Map(known.map((v) => [v.yt_id, v.duration_s == null ? String(v.title) : `${v.title} (${Math.round(Number(v.duration_s) / 60)} min)`]))
     const lastDay = new Date(Date.parse(today) + MAX_DAYS_AHEAD * 86400000).toISOString().slice(0, 10)
     const monday = new Date(Date.parse(today) - ((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10)
 
@@ -392,7 +410,7 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
       if (s.slot !== 'am' && s.slot !== 'pm') problems.push(`${label}: slot must be am or pm`)
       if (!s.title) problems.push(`${label}: title is missing`)
       if (!s.kind) problems.push(`${label}: kind is missing`)
-      for (const e of s.exercises) if (!EXERCISES.includes(e)) problems.push(`${label}: unknown exercise ${e}`)
+      for (const e of s.exercises) if (!Object.hasOwn(EXERCISES, e)) problems.push(`${label}: unknown exercise ${e}`)
       for (const v of s.video_ids) if (!inLibrary.has(v)) problems.push(`${label}: video ${v} is not in her list`)
     }
 
@@ -450,7 +468,7 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
         // Just moving a session doesn't call for new content
         if (c.kind !== undefined || c.exercises !== undefined || c.video_ids !== undefined) checkContent(after, label)
         const change: Change = { op: 'change', session_id: id, before, after }
-        if (!linesOf(change).length && before.position === after.position) problems.push(`${label}: this changes nothing`)
+        if (!linesOf(change).length) problems.push(`${label}: this changes nothing`)
         result.push(change)
       } else if (c.action === 'note') {
         const week = c.week_start
@@ -474,7 +492,7 @@ export async function prepareProposal(input: unknown, db: Reader, today: string)
     })
 
     if (problems.length) return { problems }
-    return { summary: title, lines: result.flatMap(linesOf), changes: result }
+    return { summary: title, lines: result.flatMap((change) => linesOf(change, inLibrary)), changes: result }
   } catch (e) {
     console.error(`propose_changes: ${e instanceof Error ? e.message : String(e)}`)
     return { problems: ['The plan could not be read just now.'] }

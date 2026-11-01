@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { soloSvg, twinsSvg, type DogPose } from '@/lib/dachshunds'
 
-const POSES: DogPose[] = ['stretch', 'plank', 'lift', 'bridge', 'sit', 'ball', 'walk', 'rest', 'highfive']
+const POSES: DogPose[] = ['stretch', 'plank', 'lift', 'bridge', 'sit', 'ball', 'walk', 'run', 'cycle', 'rest', 'highfive']
 
 describe('the twin dachshunds', () => {
   it('draws both twins in every pose', () => {
