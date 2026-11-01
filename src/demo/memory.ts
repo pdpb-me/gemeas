@@ -4,6 +4,7 @@
 import type { Backend } from '@/data/api'
 import { check, checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, isPill, kindOf, LIMITS, walkRow } from '@/data/rules'
 import type { ActivityRow, CheckIns, DayDot, DaySession } from '@/data/types'
+import { scriptedReply } from '@/demo/coach-replies'
 import type { Db } from '@/demo/db'
 import { DEMO_USER } from '@/demo/db'
 import { now } from '@/lib/clock'
@@ -27,7 +28,7 @@ function activityOf(a: Db['activities'][number]): ActivityRow {
   return { id, date, sport, source, duration_s, distance_m }
 }
 
-export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => number } = {}): Backend {
+export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => number; replyPauseMs?: number } = {}): Backend {
   // A pause like a real network's, so loading states can be seen (?latency=600)
   const wait = () => new Promise<void>((r) => setTimeout(r, options.latencyMs?.() ?? 0))
 
@@ -152,6 +153,29 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
         .reviews.filter((x) => x.week_start <= weekStart)
         .sort((a, b) => (a.week_start < b.week_start ? 1 : a.week_start > b.week_start ? -1 : a.created_at < b.created_at ? 1 : -1))[0]
       return r ? { id: r.id, week_start: r.week_start, summary: r.summary, decisions: r.decisions, created_at: r.created_at } : null
+    },
+
+    async coachAvailable() {
+      return true
+    },
+
+    async chatMessages() {
+      await wait()
+      return structuredClone(db().chat_messages)
+    },
+
+    async sendChat(text, onReply) {
+      await wait()
+      check(LIMITS.chat(text), 'messaggio')
+      db().chat_messages.push({ id: newId(), role: 'user', text: text.trim(), created_at: stamp() })
+      const reply = scriptedReply(text, db(), appDay(now()))
+      // a piece at a time, like the real coach's reply
+      const words = reply.split(/(?<=\s)/)
+      for (let i = 1; i <= words.length; i++) {
+        if (options.replyPauseMs) await new Promise((r) => setTimeout(r, options.replyPauseMs))
+        onReply(words.slice(0, i).join(''))
+      }
+      db().chat_messages.push({ id: newId(), role: 'coach', text: reply, created_at: stamp() })
     },
 
     async setStatus(id, status) {

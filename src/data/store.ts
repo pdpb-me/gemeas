@@ -9,7 +9,7 @@ import { getPref, setPref } from '@/lib/prefs'
 //   race. When a write is done, only the screens that read the tables it touched
 //   reload. If saving fails, a short message says so (and the screens reload, so they
 //   show what is really saved).
-export type Table = 'plan_sessions' | 'session_logs' | 'symptoms' | 'activities' | 'tests' | 'weights' | 'reviews' | 'videos'
+export type Table = 'plan_sessions' | 'session_logs' | 'symptoms' | 'activities' | 'tests' | 'weights' | 'reviews' | 'videos' | 'chat_messages'
 
 const listeners = new Set<(tables: Set<Table>) => void>()
 
@@ -37,6 +37,7 @@ export const READS = {
   activities: ['activities'],
   oldestActivityDate: ['activities'],
   review: ['reviews'],
+  chatMessages: ['chat_messages'],
 } satisfies Partial<Record<keyof Backend, Table[]>>
 
 // What each write touches
@@ -65,6 +66,8 @@ export const data = {
   activities: backend.activities,
   oldestActivityDate: backend.oldestActivityDate,
   review: backend.review,
+  coachAvailable: backend.coachAvailable,
+  chatMessages: backend.chatMessages,
 } satisfies Partial<Backend>
 
 // One write at a time
@@ -113,6 +116,21 @@ export const write = {
   removeWalk: save('removeWalk', 'Camminata non rimossa'),
 }
 
+// A message to the coach. Not one of the writes above: the reply can take a while, and
+// nothing else should wait for it. Answers with what went wrong, in plain words, or null.
+export async function sendChat(text: string, onReply: (soFar: string) => void): Promise<string | null> {
+  try {
+    await backend.sendChat(text, onReply)
+    return null
+  } catch (e) {
+    console.error(e)
+    const offline = typeof navigator !== 'undefined' && !navigator.onLine
+    return offline ? 'Sembra che tu sia offline.' : e instanceof Error ? e.message : 'Il messaggio non è partito.'
+  } finally {
+    changed(['chat_messages'])
+  }
+}
+
 // New activities from the watch, at most once an hour. Quiet if it fails: the night's sync
 // tries again, and nothing she typed depends on it.
 const WATCH_SYNC_EVERY = 60 * 60_000
@@ -130,5 +148,5 @@ export async function syncWatch() {
 
 // Everything may have changed elsewhere (the coach): reload all
 export function refreshAll() {
-  changed(['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos'])
+  changed(['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos', 'chat_messages'])
 }

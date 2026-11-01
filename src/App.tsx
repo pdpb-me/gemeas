@@ -1,23 +1,28 @@
 import { Suspense, useEffect, useState } from 'react'
-import { ChartLineIcon, DumbbellIcon, SunIcon } from 'lucide-react'
+import { ChartLineIcon, DumbbellIcon, MessageSquareTextIcon, SunIcon } from 'lucide-react'
+import { CoachChat } from '@/components/coach-chat'
 import { Login } from '@/components/login'
 import { Progress } from '@/components/progress'
 import { CardSkeleton } from '@/components/states'
 import { Today } from '@/components/today'
 import { DemoBar, DemoLibrary } from '@/data/backend'
 import { syncWatch } from '@/data/store'
+import { useCoachAvailable } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
 import { cn } from '@/lib/utils'
 
 const TABS = [
   { id: 'today', label: 'Oggi', icon: SunIcon },
   { id: 'progress', label: 'Progressi', icon: ChartLineIcon },
+  // Only for who has the chat
+  { id: 'coach', label: 'Coach', icon: MessageSquareTextIcon },
   // Only the demo has the video list, for now
   ...(DemoLibrary ? [{ id: 'library', label: 'Esercizi', icon: DumbbellIcon }] : []),
 ]
 
 function App() {
   const signedIn = useSession()
+  const hasCoach = useCoachAvailable(signedIn === true)
   const [tab, setTab] = useState('today')
   // a session or exercise screen has its own buttons at the bottom: hide the tab bar there
   const [deep, setDeep] = useState(false)
@@ -40,6 +45,7 @@ function App() {
       <div className={deep ? undefined : 'pb-20'}>
         {tab === 'today' && <Today onDeepChange={setDeep} />}
         {tab === 'progress' && <Progress onDeepChange={setDeep} />}
+        {tab === 'coach' && <CoachChat />}
         {tab === 'library' && DemoLibrary && (
           <Suspense fallback={<CardSkeleton className="m-4" />}>
             <DemoLibrary />
@@ -49,7 +55,7 @@ function App() {
       {!deep && (
         <nav className="fixed inset-x-0 bottom-0 z-20 border-t bg-card pb-[env(safe-area-inset-bottom)]" aria-label="Principale">
           <div className="mx-auto flex max-w-md">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {TABS.filter(({ id }) => id !== 'coach' || hasCoach).map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 type="button"

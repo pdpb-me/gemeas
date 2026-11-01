@@ -379,6 +379,20 @@ export const backend: Backend = {
     if (error) throw new Error(error.message)
   },
 
+  // The chat with the coach needs its tables and server function first: until then
+  // nobody has it, so the tab stays hidden in the real app
+  async coachAvailable() {
+    return false
+  },
+
+  async chatMessages() {
+    return []
+  },
+
+  async sendChat() {
+    throw new Error('Il coach non è ancora disponibile')
+  },
+
   async removeWalk(id) {
     check(await supabase.from('activities').delete().eq('id', id))
   },

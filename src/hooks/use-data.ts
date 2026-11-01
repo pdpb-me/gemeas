@@ -15,6 +15,14 @@ export function useReview(weekStart: string) {
   return useQuery(`review:${weekStart}`, READS.review, () => data.review(weekStart))
 }
 
+export function useCoachAvailable(signedIn: boolean) {
+  return useQuery(`coach-available:${signedIn}`, [], async () => signedIn && data.coachAvailable()).data ?? false
+}
+
+export function useChatMessages() {
+  return useQuery('chat-messages', READS.chatMessages, () => data.chatMessages(), { keepPrevious: true })
+}
+
 export function useProgress(today: string) {
   return useQuery(`progress:${today}`, READS.progress, () => data.progress(today), { keepPrevious: true })
 }

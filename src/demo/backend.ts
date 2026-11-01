@@ -7,10 +7,23 @@ import { demo } from '@/demo/state'
 
 export { DemoBar } from '@/demo/demo-bar'
 export const DemoLibrary = lazy(() => import('@/demo/library'))
+export const DemoCoachNotice = 'Demo: risposte già scritte, non è il vero coach.'
 
+const params = new URLSearchParams(location.search)
 // ?latency=600 slows every read and write down, to see loading states
-const latency = Number(new URLSearchParams(location.search).get('latency') ?? 0) || 0
-const memory = createMemoryBackend(demo.db, { latencyMs: () => latency })
+const latency = Number(params.get('latency') ?? 0) || 0
+const memory = createMemoryBackend(demo.db, { latencyMs: () => latency, replyPauseMs: 35 })
+
+// ?chatfail=load or ?chatfail=send: to see the chat's error states
+const chatFail = params.get('chatfail')
+if (chatFail === 'load')
+  memory.chatMessages = async () => {
+    throw new Error('Demo: la chat non si carica')
+  }
+if (chatFail === 'send')
+  memory.sendChat = async () => {
+    throw new Error('Il coach non risponde adesso. Riprova tra poco.')
+  }
 
 const WRITES = new Set<keyof Backend>([
   'setStatus',
@@ -23,6 +36,7 @@ const WRITES = new Set<keyof Backend>([
   'saveWeight',
   'addWalk',
   'removeWalk',
+  'sendChat',
 ])
 
 // Every write is remembered in this browser

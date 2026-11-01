@@ -1,5 +1,6 @@
 import type {
   ActivityRow,
+  ChatMessage,
   CheckIns,
   DayDot,
   DaySession,
@@ -39,6 +40,8 @@ export interface Backend {
   activities(from: string, to: string): Promise<ActivityRow[]> // newest first
   oldestActivityDate(): Promise<string | null>
   review(weekStart: string): Promise<Review | null> // the coach's note for that week, or the latest before it
+  coachAvailable(): Promise<boolean> // does this person have the chat with the coach?
+  chatMessages(): Promise<ChatMessage[]> // oldest first
 
   // Writes
   setStatus(planSessionId: string, status: Status | null): Promise<void>
@@ -52,4 +55,5 @@ export interface Backend {
   addWalk(date: string, minutes: number, km: number | null): Promise<void>
   removeWalk(id: string): Promise<void>
   syncWatch(): Promise<void> // asks the server to copy new activities from the watch
+  sendChat(text: string, onReply: (soFar: string) => void): Promise<void> // saves the message and the coach's reply, which arrives a piece at a time
 }

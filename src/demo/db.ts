@@ -1,4 +1,5 @@
 // The demo's database: the same tables and row shapes as Supabase, kept in memory.
+import type { ChatMessage } from '@/data/types'
 import type { Tables } from '@/lib/database.types'
 
 export type Db = {
@@ -10,9 +11,10 @@ export type Db = {
   weights: Tables<'weights'>[]
   reviews: Tables<'reviews'>[]
   videos: Tables<'videos'>[]
+  chat_messages: ChatMessage[]
 }
 
-export const TABLES = ['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos'] as const satisfies readonly (keyof Db)[]
+export const TABLES = ['plan_sessions', 'session_logs', 'symptoms', 'activities', 'tests', 'weights', 'reviews', 'videos', 'chat_messages'] as const satisfies readonly (keyof Db)[]
 
 export function emptyDb(): Db {
   return Object.fromEntries(TABLES.map((t) => [t, []])) as unknown as Db

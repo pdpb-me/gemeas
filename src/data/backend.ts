@@ -8,3 +8,6 @@ export const DemoBar: React.ComponentType | null = null
 
 // The demo's video list; the real app has none yet (it needs a gemeas.videos table first)
 export const DemoLibrary: React.ComponentType | null = null
+
+// What the demo says about its made-up coach; the real app says nothing
+export const DemoCoachNotice: string | null = null

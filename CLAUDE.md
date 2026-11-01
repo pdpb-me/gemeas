@@ -44,9 +44,9 @@ After a schema change: update `src/lib/database.types.ts` by hand and check it a
 
 Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
-- `src/components/`: screens and cards. `today.tsx` → `check-ins.tsx`, `coach-note.tsx`, `plan-list.tsx`, `walks.tsx` → `session-screen.tsx` → `exercise-screen.tsx`. `progress.tsx` → `pain-detail.tsx`, `weight-detail.tsx`, `activities-list.tsx`. Sheets: `log-sheet.tsx`, `move-sheet.tsx`, `test-card.tsx`
+- `src/components/`: screens and cards. `today.tsx` → `check-ins.tsx`, `coach-note.tsx`, `plan-list.tsx`, `walks.tsx` → `session-screen.tsx` → `exercise-screen.tsx`. `progress.tsx` → `pain-detail.tsx`, `weight-detail.tsx`, `activities-list.tsx`. `coach-chat.tsx`: the chat with the coach (for now only the demo has it, with answers already written). Sheets: `log-sheet.tsx`, `move-sheet.tsx`, `test-card.tsx`
 - `src/data/`: **the only way to the data.** `api.ts` (the `Backend` interface), `supabase.ts` (real, schema `gemeas`), `rules.ts` (row rules for both backends), `store.ts`, `use-query.ts`
-- `src/demo/`: `simulate.ts` (seeded 12 made-up weeks), `scenarios.ts`, `state.ts`, `memory.ts`, `demo-bar.tsx`, `library.tsx` + `video-data.ts` (Esercizi: a hand-picked sample; the full datasets stay out of the repo). Open a moment with `?scenario=<id>`; `&bar=0` hides the strip
+- `src/demo/`: `simulate.ts` (seeded 12 made-up weeks), `scenarios.ts`, `state.ts`, `memory.ts`, `demo-bar.tsx`, `coach-replies.ts` (the chat's written answers), `library.tsx` + `video-data.ts` (Esercizi: a hand-picked sample; the full datasets stay out of the repo). Open a moment with `?scenario=<id>`; `&bar=0` hides the strip; `?chatfail=load` or `send` shows the chat's errors
 - `src/lib/`: pure logic with tests. `src/exercises/`: the foot and calf figures (keep pose numbers as they are)
 
 ## Data words

@@ -29,6 +29,9 @@ export type CheckIns = {
   weight: number | null // kg
 }
 
+// One message in the chat with the coach
+export type ChatMessage = { id: string; role: 'user' | 'coach'; text: string; created_at: string }
+
 export type TrendSymptom = { date: string; body_area: string; timing: string; score: number }
 
 export type ProgressData = {

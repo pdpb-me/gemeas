@@ -38,6 +38,9 @@ export function walkRow(date: string, minutes: number, km: number | null) {
   }
 }
 
+// The longest message to the coach
+export const CHAT_MAX_CHARS = 2000
+
 // What the database accepts (see supabase/migrations): the demo checks the same
 export const LIMITS = {
   score: (n: number) => Number.isInteger(n) && n >= 0 && n <= 10,
@@ -47,6 +50,7 @@ export const LIMITS = {
   effort: (s: string) => s === 'light' || s === 'medium' || s === 'hard',
   minutes: (n: number) => Number.isFinite(n) && n >= 1 && n <= 600,
   km: (n: number) => Number.isFinite(n) && n > 0 && n <= 100,
+  chat: (s: string) => s.trim().length > 0 && s.length <= CHAT_MAX_CHARS,
 }
 
 export function check(ok: boolean, what: string) {

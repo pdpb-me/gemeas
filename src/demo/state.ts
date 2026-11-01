@@ -43,6 +43,8 @@ function load(): Saved | null {
   if (s) return fresh(s)
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Saved | null
+    // saved before the demo had a chat: keep the place
+    if (saved?.db) saved.db.chat_messages ??= []
     return saved?.v === 1 && TABLES.every((t) => Array.isArray(saved.db[t])) ? saved : null
   } catch {
     return null
