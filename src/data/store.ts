@@ -69,6 +69,7 @@ export const data = {
   oldestActivityDate: backend.oldestActivityDate,
   review: backend.review,
   coachAvailable: backend.coachAvailable,
+  tracksFoot: backend.tracksFoot,
   chatMessages: backend.chatMessages,
   chatProposals: backend.chatProposals,
 } satisfies Partial<Backend>

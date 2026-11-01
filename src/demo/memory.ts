@@ -159,6 +159,10 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       return true
     },
 
+    async tracksFoot() {
+      return true
+    },
+
     async chatMessages() {
       await wait()
       return structuredClone(db().chat_messages)

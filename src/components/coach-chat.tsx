@@ -14,7 +14,8 @@ import { appDay } from '@/lib/dates'
 import { relativeDay } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const SUGGESTIONS = ['Cosa faccio oggi?', 'Come sta andando il piede?', 'Facciamo il punto della settimana?']
+const FOOT_SUGGESTION = 'Come sta andando il piede?'
+const SUGGESTIONS = ['Cosa faccio oggi?', FOOT_SUGGESTION, 'Facciamo il punto della settimana?']
 const TALLEST_BOX = 160 // px; a longer message scrolls inside the box
 const NEAR_END = 120 // px
 
@@ -79,7 +80,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
 // The chat with the coach. Saved messages come from the backend; the one being sent and
 // its reply show here until they are saved. The box stays above the tab bar, in the flow
 // of the page, so the phone's keyboard can push it up by itself.
-export function CoachChat() {
+export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
   const today = useToday()
   const messages = useChatMessages()
   const proposals = useChatProposals().data
@@ -157,7 +158,7 @@ export function CoachChat() {
         )}
         {saved?.length === 0 && !showPending && (
           <div className="flex flex-col items-start gap-2">
-            {SUGGESTIONS.map((s) => (
+            {SUGGESTIONS.filter((s) => tracksFoot || s !== FOOT_SUGGESTION).map((s) => (
               <Button key={s} variant="outline" className="h-11 px-4" onClick={() => setText(s)}>
                 {s}
               </Button>

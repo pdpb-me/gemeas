@@ -404,6 +404,11 @@ export const backend: Backend = {
     return profile?.enabled === true
   },
 
+  async tracksFoot() {
+    const profile = check(await supabase.from('coach_profiles').select('tracks_foot').maybeSingle())
+    return profile?.tracks_foot === true
+  },
+
   chatMessages,
 
   async chatProposals() {

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { MessageSquareTextIcon } from 'lucide-react'
 import { CoachNoteSheet } from '@/components/coach-note'
-import { ErrorCard } from '@/components/states'
+import { EmptyNote, ErrorCard } from '@/components/states'
 import { RowArrow, StatusMark } from '@/components/status-mark'
 import { TestHistory } from '@/components/test-card'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ const Activities = lazy(() => import('@/components/activities-list').then((m) =>
 type Screen = { kind: 'overview' } | { kind: 'pain' } | { kind: 'weight' }
 
 // Overview (cards) | Activities (walks); a card opens its detail.
-export function Progress({ onDeepChange }: { onDeepChange: (deep: boolean) => void }) {
+export function Progress({ tracksFoot, onDeepChange }: { tracksFoot: boolean | undefined; onDeepChange: (deep: boolean) => void }) {
   const today = useToday()
   const progress = useProgress(today)
   const nav = useScreens<Screen>({ kind: 'overview' })
@@ -75,10 +75,10 @@ export function Progress({ onDeepChange }: { onDeepChange: (deep: boolean) => vo
             <div className="p-4">
               <ErrorCard what="i tuoi progressi" onRetry={progress.retry} />
             </div>
-          ) : !data ? (
+          ) : !data || tracksFoot === undefined ? (
             <OverviewSkeleton />
           ) : (
-            <Overview data={data} onOpen={(s) => nav.push(s)} />
+            <Overview data={data} tracksFoot={tracksFoot} onOpen={(s) => nav.push(s)} />
           )}
         </TabsContent>
         <TabsContent value="activities">
@@ -102,7 +102,7 @@ function OverviewSkeleton() {
   )
 }
 
-function Overview({ data, onOpen }: { data: ProgressData; onOpen: (s: Screen) => void }) {
+function Overview({ data, tracksFoot, onOpen }: { data: ProgressData; tracksFoot: boolean; onOpen: (s: Screen) => void }) {
   const foot = footSummary(data.symptoms, data.today)
   const anything = data.symptoms.length > 0 || data.weights.length > 0 || data.tests.length > 0
   const l = foot.latest
@@ -110,19 +110,22 @@ function Overview({ data, onOpen }: { data: ProgressData; onOpen: (s: Screen) =>
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="feature flex-col justify-start gap-1 text-card">
-        <span className="text-sm font-bold">Ultimi 7 giorni</span>
-        <p className="text-h2 font-bold text-balance">
-          {anything ? headline(foot.verdict, flare) : 'L’andamento compare qui dopo una settimana di check-in.'}
-        </p>
-      </div>
+      {tracksFoot && (
+        <div className="feature flex-col justify-start gap-1 text-card">
+          <span className="text-sm font-bold">Ultimi 7 giorni</span>
+          <p className="text-h2 font-bold text-balance">
+            {anything ? headline(foot.verdict, flare) : 'L’andamento compare qui dopo una settimana di check-in.'}
+          </p>
+        </div>
+      )}
       <CoachRow today={data.today} />
       <WeekCard today={data.today} />
-      {!anything && (
+      {!tracksFoot && <NothingYet data={data} />}
+      {tracksFoot && !anything && (
         <p className="px-1 text-sm text-muted-foreground">Rispondi al check-in del mattino su Oggi. Dopo una settimana, qui vedrai come va il piede.</p>
       )}
-      {anything && <FootCard s={foot} onOpen={() => onOpen({ kind: 'pain' })} />}
-      <TestCard data={data} />
+      {tracksFoot && anything && <FootCard s={foot} onOpen={() => onOpen({ kind: 'pain' })} />}
+      {tracksFoot && <TestCard data={data} />}
       <WeightCard data={data} onOpen={() => onOpen({ kind: 'weight' })} />
       {import.meta.env.MODE !== 'demo' && (
         <Button variant="ghost" className="mt-4 h-11 self-center text-muted-foreground" onClick={() => store.auth.signOut()}>
@@ -130,6 +133,18 @@ function Overview({ data, onOpen }: { data: ProgressData; onOpen: (s: Screen) =>
         </Button>
       )}
     </div>
+  )
+}
+
+// Without the foot, an empty overview has no plan and no weight yet
+function NothingYet({ data }: { data: ProgressData }) {
+  const days = weekOf(data.today)
+  const dots = useWeekDots(days[0], days[6]).data
+  if (!dots || Object.keys(dots).length > 0 || data.weights.length > 0) return null
+  return (
+    <EmptyNote title="Ancora niente da mostrare">
+      Qui vedrai la tua settimana, appena hai un piano, e il peso, se lo segni su Oggi.
+    </EmptyNote>
   )
 }
 

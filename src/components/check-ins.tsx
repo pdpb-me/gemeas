@@ -24,13 +24,58 @@ function Note({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Who doesn't follow the foot: only the weight, if she likes. It never asks.
+function WeightOnly({ state, isToday }: { state: CheckInsState; isToday: boolean }) {
+  const [open, setOpen] = useState(false)
+  const weight = state.checkIns?.weight ?? null
+  if (open)
+    return (
+      <Card className="gap-3 px-4 py-4">
+        <WeightInput key={weight ?? 'none'} value={weight} onSave={state.saveWeight} />
+        <Button variant="outline" className="h-11 rounded-full" onClick={() => setOpen(false)}>
+          Fatto
+        </Button>
+      </Card>
+    )
+  if (weight == null)
+    return (
+      <Button variant="ghost" className="h-11 self-start px-2 text-primary" onClick={() => setOpen(true)}>
+        Aggiungi peso
+      </Button>
+    )
+  return (
+    <Card className="flex-row items-center gap-3 py-2 pr-2 pl-4">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <span className="text-xs font-bold text-muted-foreground">{isToday ? 'Stamattina' : 'Quella mattina'}</span>
+        <span className="mt-0.5 text-sm font-bold tabular-nums">{kg(weight)}</span>
+      </div>
+      <Button variant="ghost" className="h-11 rounded-full px-4 text-primary" onClick={() => setOpen(true)}>
+        Modifica
+      </Button>
+    </Card>
+  )
+}
+
 // Morning: the right foot at the first steps out of bed, and the weight if she likes.
-export function MorningCheckIn({ state, ask, isToday, afternoon = false }: { state: CheckInsState; ask: Ask; isToday: boolean; afternoon?: boolean }) {
+export function MorningCheckIn({
+  state,
+  ask,
+  isToday,
+  afternoon = false,
+  tracksFoot,
+}: {
+  state: CheckInsState
+  ask: Ask
+  isToday: boolean
+  afternoon?: boolean
+  tracksFoot: boolean | undefined
+}) {
   const [open, setOpen] = useState(false) // opened by hand (Edit, or to add the weight)
   const [weightOpen, setWeightOpen] = useState(false)
   const c = state.checkIns
   if (ask === 'none') return null
-  if (!c) return <Skeleton className="h-36 rounded-xl bg-card" />
+  if (!c || tracksFoot === undefined) return <Skeleton className="h-36 rounded-xl bg-card" />
+  if (!tracksFoot) return <WeightOnly state={state} isToday={isToday} />
 
   const sore = isToday && c.foot != null && c.foot >= 5
   const note = sore && (

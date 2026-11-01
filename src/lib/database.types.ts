@@ -165,7 +165,9 @@ export type Database = {
           enabled: boolean
           instructions: string
           reply_started_at: string | null
+          tracks_foot: boolean
           user_id: string
+          videos_from: string | null
         }
         Insert: {
           created_at?: string
@@ -173,7 +175,9 @@ export type Database = {
           enabled?: boolean
           instructions?: string
           reply_started_at?: string | null
+          tracks_foot?: boolean
           user_id?: string
+          videos_from?: string | null
         }
         Update: {
           created_at?: string
@@ -181,7 +185,9 @@ export type Database = {
           enabled?: boolean
           instructions?: string
           reply_started_at?: string | null
+          tracks_foot?: boolean
           user_id?: string
+          videos_from?: string | null
         }
         Relationships: []
       }

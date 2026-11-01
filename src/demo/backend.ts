@@ -25,6 +25,9 @@ if (chatFail === 'send')
     throw new Error('Il coach non risponde adesso. Riprova tra poco.')
   }
 
+// ?foot=0: the app for someone who doesn't follow the foot
+if (params.get('foot') === '0') memory.tracksFoot = async () => false
+
 const WRITES = new Set<keyof Backend>([
   'setStatus',
   'setEffort',

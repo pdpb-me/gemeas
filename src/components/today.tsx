@@ -29,7 +29,7 @@ type Screen = { kind: 'day' } | { kind: 'session'; id: string; openLog?: boolean
 
 // Opens on today. Three screens: the day (check-in + plan + walks) → a session → an exercise.
 // The week strip opens other days (e.g. to fill in yesterday).
-export function Today({ onDeepChange }: { onDeepChange: (deep: boolean) => void }) {
+export function Today({ tracksFoot, onDeepChange }: { tracksFoot: boolean | undefined; onDeepChange: (deep: boolean) => void }) {
   const today = useToday()
   // the chosen day; null follows today (also when the app is reopened the next morning)
   const [picked, setPicked] = useState<string | null>(null)
@@ -54,6 +54,7 @@ export function Today({ onDeepChange }: { onDeepChange: (deep: boolean) => void 
       dots={week.data ?? {}}
       onDate={choose}
       onWeek={(dir) => choose(addDays(date, dir * 7))}
+      tracksFoot={tracksFoot}
       onDeepChange={onDeepChange}
     />
   )
@@ -66,6 +67,7 @@ function Day({
   dots,
   onDate,
   onWeek,
+  tracksFoot,
   onDeepChange,
 }: {
   date: string
@@ -74,6 +76,7 @@ function Day({
   dots: Record<string, DayDot[]>
   onDate: (date: string) => void
   onWeek: (direction: -1 | 1) => void
+  tracksFoot: boolean | undefined
   onDeepChange: (deep: boolean) => void
 }) {
   const day = useDay(date)
@@ -150,10 +153,12 @@ function Day({
     )
   }
 
-  const morning = <MorningCheckIn state={checkIns} ask={ask} isToday={isToday} afternoon={isToday && hour >= 12} />
-  // the check-in comes first until it's answered or the morning has passed; then the plan does
-  const morningFirst = !isToday || hour < 12 || checkIns.checkIns?.foot != null
-  const footSore = (checkIns.checkIns?.foot ?? 0) >= 5
+  const morning = <MorningCheckIn state={checkIns} ask={ask} isToday={isToday} afternoon={isToday && hour >= 12} tracksFoot={tracksFoot} />
+  // the check-in comes first until it's answered or the morning has passed; then the plan does.
+  // Without the foot there's only the weight: it stays below the plan.
+  const morningFirst = tracksFoot !== false && (!isToday || hour < 12 || checkIns.checkIns?.foot != null)
+  // the dogs stay away from a sore foot and the weight
+  const calm = (checkIns.checkIns?.foot ?? 0) < 5 && checkIns.checkIns?.weight == null
   const subtitle = isToday ? longDate(date) : `${dayMonth(date)} · ${inDays(date, today)}`
 
   return (
@@ -203,7 +208,7 @@ function Day({
       </header>
 
       <div className="flex flex-col gap-3 p-4">
-        {isToday && <TodayNotes today={today} dots={dots} onDate={onDate} />}
+        {isToday && <TodayNotes today={today} dots={dots} tracksFoot={tracksFoot} onDate={onDate} />}
 
         {morningFirst && morning}
 
@@ -212,10 +217,10 @@ function Day({
         ) : day.sessions === undefined ? (
           <CardSkeleton />
         ) : day.sessions.length === 0 ? (
-          <NothingPlanned dots={dots} calm={!footSore} />
+          <NothingPlanned dots={dots} calm={calm} />
         ) : (
           <>
-            {isToday && !footSore && dayDone(day.sessions) && (
+            {isToday && calm && dayDone(day.sessions) && (
               <EmptyNote title="Fatto per oggi" picture={<Dachshunds pose="highfive" />}>
                 A domani.
               </EmptyNote>
@@ -224,7 +229,7 @@ function Day({
               sessions={day.sessions}
               date={date}
               today={today}
-              calm={!footSore}
+              calm={calm}
               onOpen={(id, openLog) => nav.push({ kind: 'session', id, openLog })}
               onStatus={day.setStatus}
             />
@@ -262,7 +267,17 @@ function NothingPlanned({ dots, calm }: { dots: Record<string, DayDot[]>; calm: 
 }
 
 // At the top of today: the coach's note for this week, and a word about yesterday or a gap
-function TodayNotes({ today, dots, onDate }: { today: string; dots: Record<string, DayDot[]>; onDate: (d: string) => void }) {
+function TodayNotes({
+  today,
+  dots,
+  tracksFoot,
+  onDate,
+}: {
+  today: string
+  dots: Record<string, DayDot[]>
+  tracksFoot: boolean | undefined
+  onDate: (d: string) => void
+}) {
   const review = useReview(mondayOf(today)).data
   const lastLog = useLastLog(today).data
   const yesterday = addDays(today, -1)
@@ -276,7 +291,7 @@ function TodayNotes({ today, dots, onDate }: { today: string; dots: Record<strin
   const open = (dots[yesterday] ?? []).filter((d) => !d.status).length
   const missing = [
     open > 0 && (open === 1 ? 'un allenamento' : `${open} allenamenti`),
-    yCheckIns && yCheckIns.foot == null && 'il check-in',
+    tracksFoot && yCheckIns && yCheckIns.foot == null && 'il check-in',
   ].filter((x): x is string => !!x)
 
   return (

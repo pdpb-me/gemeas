@@ -37,7 +37,7 @@ This file is public, so it holds no names, user ids or health details. Those are
 | `title` | short, in Italian. |
 | `instructions` | one or two sentences: what to do today (sets, reps, holds). Use the app's pain words, not numbers: "Lieve va bene; fermati sopra Lieve". |
 | `exercises` | slugs of drawn figures, in display order, e.g. `'{ball_squeeze_heel_raise,banded_inversion}'`. **An unknown slug shows nothing.** |
-| `video_ids` | YouTube ids, e.g. `'{wZp-TGqgBCY}'`. **A video shows only if its id is in `gemeas.videos` for this user.** |
+| `video_ids` | YouTube ids, e.g. `'{wZp-TGqgBCY}'`. **A video shows only if its id is in `gemeas.videos` for this user, or for her `videos_from`.** |
 | `block` | which plan it belongs to, e.g. `'2026-11 mese 1'`. |
 
 **Kinds** (other words work too, but show with no special behaviour):
@@ -89,9 +89,11 @@ One row per week, one per `week_start`; to fix one, `update` it. **`week_start` 
 
 Who has the chat in the app. `instructions` is private: who she is, for the coach in the app. When something important changes (the trainer's days, a decision about the foot), propose an update to it. A change starts a new conversation in the app. Don't change `enabled` or `daily_limit` unless the owner asks.
 
+`tracks_foot`: whether the app follows this person's foot. When false, the app doesn't ask about the foot and doesn't show it, so plan no foot, pill or test sessions for her. `videos_from`: whose video list she reads, so she can have no videos of her own.
+
 ### `gemeas.videos`
 
-The full video lists of the two channels, without clips of a minute or less, live streams and pregnancy classes. Consider all of them, including `cardio` and HIIT classes when she wants a more intense session. Columns: `yt_id`, `title` (as on YouTube), `duration_s`, `views`, `published_at`, `playlists` (the channel), `tags`, `notes` (a short Italian name), `flags`. The app shows `flags` under the video.
+The full video lists of the two channels, without clips of a minute or less, live streams and pregnancy classes. The list is shared: in the query below, `<USER_ID>` is the person's own id, or her `videos_from` if she has one. Only the list's owner can change a row. Consider all of them, including `cardio` and HIIT classes when she wants a more intense session. Columns: `yt_id`, `title` (as on YouTube), `duration_s`, `views`, `published_at`, `playlists` (the channel), `tags`, `notes` (a short Italian name), `flags`. The app shows `flags` under the video.
 
 - **Videos with `notes`:** a short list made for the demo, from their titles only. Their `flags` says "Scelto dal titolo: ancora da guardare". Having `notes` doesn't make a video better than the others.
 - **Videos without `notes`:** `flags` says "Ancora da guardare". Before using one in a plan, write a short Italian name in `notes`, and tell the owner you chose it from the title alone.

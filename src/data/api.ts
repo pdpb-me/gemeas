@@ -42,6 +42,7 @@ export interface Backend {
   oldestActivityDate(): Promise<string | null>
   review(weekStart: string): Promise<Review | null> // the coach's note for that week, or the latest before it
   coachAvailable(): Promise<boolean> // does this person have the chat with the coach?
+  tracksFoot(): Promise<boolean> // does this person follow the foot?
   chatMessages(): Promise<ChatMessage[]> // oldest first
   chatProposals(): Promise<Proposal[]> // oldest first
 

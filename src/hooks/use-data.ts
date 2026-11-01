@@ -19,6 +19,12 @@ export function useCoachAvailable(signedIn: boolean) {
   return useQuery(`coach-available:${signedIn}`, [], async () => signedIn && data.coachAvailable()).data ?? false
 }
 
+// undefined while loading. If it can't be read, the app stays as it always was: with the foot.
+export function useTracksFoot(signedIn: boolean) {
+  const query = useQuery(`tracks-foot:${signedIn}`, [], async () => signedIn && data.tracksFoot())
+  return query.error ? true : query.data
+}
+
 export function useChatMessages() {
   return useQuery('chat-messages', READS.chatMessages, () => data.chatMessages(), { keepPrevious: true })
 }

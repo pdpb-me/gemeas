@@ -7,7 +7,7 @@ import { CardSkeleton } from '@/components/states'
 import { Today } from '@/components/today'
 import { DemoBar, DemoLibrary } from '@/data/backend'
 import { syncWatch } from '@/data/store'
-import { useCoachAvailable } from '@/hooks/use-data'
+import { useCoachAvailable, useTracksFoot } from '@/hooks/use-data'
 import { useSession } from '@/hooks/use-session'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +23,7 @@ const TABS = [
 function App() {
   const signedIn = useSession()
   const hasCoach = useCoachAvailable(signedIn === true)
+  const tracksFoot = useTracksFoot(signedIn === true)
   const [tab, setTab] = useState('today')
   // a session or exercise screen has its own buttons at the bottom: hide the tab bar there
   const [deep, setDeep] = useState(false)
@@ -43,9 +44,9 @@ function App() {
       {DemoBar && <DemoBar />}
       {/* room for the bottom bar */}
       <div className={deep ? undefined : 'pb-20'}>
-        {tab === 'today' && <Today onDeepChange={setDeep} />}
-        {tab === 'progress' && <Progress onDeepChange={setDeep} />}
-        {tab === 'coach' && <CoachChat />}
+        {tab === 'today' && <Today tracksFoot={tracksFoot} onDeepChange={setDeep} />}
+        {tab === 'progress' && <Progress tracksFoot={tracksFoot} onDeepChange={setDeep} />}
+        {tab === 'coach' && <CoachChat tracksFoot={tracksFoot} />}
         {tab === 'library' && DemoLibrary && (
           <Suspense fallback={<CardSkeleton className="m-4" />}>
             <DemoLibrary />
