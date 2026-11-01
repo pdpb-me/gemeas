@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { ActivityRow } from '@/data/types'
 import { useActivitiesMonth } from '@/hooks/use-activities-month'
+import { dogForSport } from '@/lib/dachshunds'
 import { mondayOf, shiftMonth } from '@/lib/dates'
 import { capitalize, dayLabel, dayMonth, duration, km, monthName, plural } from '@/lib/format'
 
@@ -15,7 +16,12 @@ const SPORT: Record<string, { label: string; icon: LucideIcon }> = {
   strength: { label: 'Forza', icon: DumbbellIcon },
   indoor_cardio: { label: 'Cardio', icon: ActivityIcon },
 }
-const sportOf = (s: string) => SPORT[s] ?? { label: capitalize(s.replaceAll('_', ' ')), icon: ActivityIcon }
+function sportOf(s: string) {
+  const pose = dogForSport(s)
+  const label = pose === 'run' ? 'Corsa' : pose === 'cycle' ? (/indoor|virtual/.test(s) ? 'Cyclette' : 'Bici') : undefined
+  const known = SPORT[s] ?? { label: capitalize(s.replaceAll('_', ' ')), icon: ActivityIcon }
+  return { ...known, label: label ?? known.label, pose }
+}
 
 // Activities tab: one month at a time (‹ Novembre 2026 ›), its weeks newest first, by day
 export function Activities({ today }: { today: string }) {
@@ -112,8 +118,15 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
                     const Icon = sport.icon
                     return (
                       <div key={a.id} className="flex min-h-14 items-center gap-3">
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border">
-                          <Icon className="size-[18px]" aria-hidden />
+                        {/* the same width for both, so the words line up */}
+                        <span className="flex w-14 shrink-0 justify-center">
+                          {sport.pose ? (
+                            <Dachshunds pose={sport.pose} solo className="w-14" />
+                          ) : (
+                            <span className="flex size-9 items-center justify-center rounded-lg border">
+                              <Icon className="size-[18px]" aria-hidden />
+                            </span>
+                          )}
                         </span>
                         <span className="flex min-w-0 flex-1 flex-col">
                           <span className="text-[17px] font-bold">{sport.label}</span>

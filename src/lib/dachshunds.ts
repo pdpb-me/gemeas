@@ -3,6 +3,15 @@
 // so the whole silhouette gets one outline. The colours (--dog-*) live in src/index.css.
 export type DogPose = 'stretch' | 'plank' | 'lift' | 'bridge' | 'sit' | 'ball' | 'walk' | 'run' | 'cycle' | 'rest' | 'highfive'
 
+// Which twin goes with an activity, if any. Garmin has many words for these (treadmill_running,
+// road_biking, indoor_cycling, virtual_ride), and it can add more: match by the word inside.
+export function dogForSport(sport: string): 'walk' | 'run' | 'cycle' | null {
+  if (/(^|_)walk(ing)?(_|$)/.test(sport)) return 'walk'
+  if (/(^|_)run(ning)?(_|$)/.test(sport)) return 'run'
+  if (/(?<!motor)cycl|bik(e|ing)|(^|_)ride(_|$)/.test(sport)) return 'cycle'
+  return null
+}
+
 type Coat = { coat: string; far: string; ear: string; tan: string; brow: boolean }
 type Pose = {
   body: string
