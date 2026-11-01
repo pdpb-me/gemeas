@@ -147,6 +147,30 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       return [...db().activities].sort(byDate)[0]?.date ?? null
     },
 
+    async doneSessions(from, to) {
+      await wait()
+      const d = db()
+      return d.plan_sessions
+        .filter((p) => p.date >= from && p.date <= to && logOf(p.id) && logOf(p.id)!.status !== 'skipped')
+        .sort((a, b) => byDateDesc(a, b) || bySlot(b, a))
+        .map((p) => ({
+          id: p.id,
+          date: p.date,
+          kind: kindOf(p.kind),
+          title: p.title,
+          exercises: [...p.exercises],
+          status: logOf(p.id)!.status,
+          minutes: logOf(p.id)!.minutes,
+          videos: p.video_ids.flatMap((id) => d.videos.filter((v) => v.yt_id === id)),
+        }))
+    },
+
+    async oldestDoneSessionDate() {
+      await wait()
+      const done = db().plan_sessions.filter((p) => logOf(p.id) && logOf(p.id)!.status !== 'skipped')
+      return [...done].sort(byDate)[0]?.date ?? null
+    },
+
     async review(weekStart) {
       await wait()
       const r = db()
@@ -235,12 +259,12 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       if (status) {
         if (log) Object.assign(log, { status, logged_at: stamp() })
         else {
-          log = { id: newId(), plan_session_id: id, status, effort: null, comment: null, logged_at: stamp(), user_id: DEMO_USER }
+          log = { id: newId(), plan_session_id: id, status, effort: null, minutes: null, comment: null, logged_at: stamp(), user_id: DEMO_USER }
           d.session_logs.push(log)
         }
         const logId = log.id
         if (clears.pain) d.symptoms = d.symptoms.filter((s) => !(s.session_log_id === logId && s.timing === 'during'))
-        if (clears.effort) log.effort = null
+        if (clears.effort) Object.assign(log, { effort: null, minutes: null })
       } else if (log) {
         const logId = log.id
         d.session_logs = d.session_logs.filter((l) => l.id !== logId)
@@ -279,6 +303,13 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
           created_at: stamp(),
           user_id: DEMO_USER,
         })
+    },
+
+    async setMinutes(id, minutes) {
+      await wait()
+      if (minutes != null) check(LIMITS.minutes(minutes), 'minuti')
+      const log = logOf(id)
+      if (log) log.minutes = minutes
     },
 
     async setComment(id, comment) {

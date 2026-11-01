@@ -18,7 +18,14 @@ export type DaySession = Tables<'plan_sessions'> & {
   videos: Video[]
 }
 
-export type DayDot = { id: string; slot: string; kind: string; status: string | null }
+// A planned session she logged as done or in part, for the history of activities
+export type DoneSession = Pick<Tables<'plan_sessions'>, 'id' | 'date' | 'kind' | 'title' | 'exercises'> & {
+  status: string
+  minutes: number | null
+  videos: { duration_s: number | null }[]
+}
+
+export type DayDot ={ id: string; slot: string; kind: string; status: string | null }
 
 // Was anything logged lately? (for the "welcome back" line)
 export type LastLog = { date: string } | null

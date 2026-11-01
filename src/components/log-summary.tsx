@@ -2,6 +2,7 @@ import type { DaySession } from '@/data/types'
 import { asksEffort, effortLabel } from '@/lib/effort'
 import { painBand, painLabel } from '@/lib/pain'
 import { PAIN_DOT, sessionPain, statusLabel } from '@/lib/session-status'
+import { asksMinutes } from '@/lib/session-time'
 import { SIDES, testFor } from '@/lib/tests'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,12 @@ export function LogSummary({ session, compact = false }: { session: DaySession; 
         {effortLabel(log.effort)}
       </span>,
     )
+  if (log.minutes != null)
+    parts.push(
+      <span key="m" className="whitespace-nowrap text-foreground">
+        {log.minutes} min
+      </span>,
+    )
   if (area && score != null)
     parts.push(
       <span key="p" className="inline-flex items-center gap-1.5 whitespace-nowrap">
@@ -46,7 +53,8 @@ export function LogSummary({ session, compact = false }: { session: DaySession; 
 
   const needsPain = compact && happened && area && score == null
   const needsEffort = compact && happened && asksEffort(session.kind) && !log.effort
-  const hint = needsPain ? `Aggiungi dolore al ${area!.short.toLowerCase()}` : needsEffort ? 'Quanto è stata dura?' : null
+  const needsMinutes = compact && happened && asksMinutes(session.kind) && log.minutes == null
+  const hint = needsPain ? `Aggiungi dolore al ${area!.short.toLowerCase()}` : needsEffort ? 'Quanto è stata dura?' : needsMinutes ? 'Quanti minuti?' : null
   return (
     <span className="flex min-w-0 flex-col gap-0.5">
       {(parts.length > 0 || hint) && (

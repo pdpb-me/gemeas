@@ -3,11 +3,15 @@ import { useBackCloses } from '@/hooks/use-back-stack'
 import { Choice, PainScale } from '@/components/pain-scale'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { LIMITS } from '@/data/rules'
 import type { DaySession, Effort, Status } from '@/data/types'
 import { asksEffort, EFFORTS } from '@/lib/effort'
 import type { PainArea } from '@/lib/pain-areas'
 import { sessionPain, STATUSES } from '@/lib/session-status'
+import { asksMinutes } from '@/lib/session-time'
 
 const NOTE_HINT: Record<string, string> = {
   trainer: 'es. tanti squat, gambe stanche',
@@ -17,8 +21,53 @@ const NOTE_HINT: Record<string, string> = {
   pill: 'es. fatta di corsa',
 }
 
-// The details of a logged session, in one bottom sheet: status, how hard it was, pain during,
-// a note. Taps save at once; the note saves when the sheet closes.
+// How long a walk, run or ride was. Saves when the box loses focus or the sheet closes;
+// empty removes it.
+function MinutesInput({ value, onSave }: { value: number | null; onSave: (minutes: number | null) => Promise<boolean> }) {
+  const [draft, setDraft] = useState(value?.toString() ?? '')
+  const [invalid, setInvalid] = useState(false)
+
+  function commit() {
+    const text = draft.trim()
+    setInvalid(false)
+    if (text === (value?.toString() ?? '')) return
+    if (text === '') return void onSave(null)
+    const minutes = Math.round(Number(text.replace(',', '.')))
+    if (!LIMITS.minutes(minutes)) return setInvalid(true)
+    void onSave(minutes)
+  }
+
+  const commitRef = useRef(commit)
+  useEffect(() => {
+    commitRef.current = commit
+  })
+  useEffect(() => () => commitRef.current(), [])
+
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="log-minutes" className="text-sm font-medium">
+        Quanti minuti? <span className="font-medium text-muted-foreground">· facoltativo</span>
+      </Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id="log-minutes"
+          inputMode="numeric"
+          placeholder="es. 30"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          className="h-11 max-w-32 text-base tabular-nums"
+        />
+        <span className="text-muted-foreground">min</span>
+      </div>
+      {invalid && <span className="text-xs font-medium text-destructive">Non salvato: da 1 a 600 minuti</span>}
+    </div>
+  )
+}
+
+// The details of a logged session, in one bottom sheet: status, how hard it was, minutes,
+// pain during, a note. Taps save at once; the note saves when the sheet closes.
 export function LogSheet({
   open,
   onOpenChange,
@@ -30,6 +79,7 @@ export function LogSheet({
   onStatus: (status: Status | null) => Promise<boolean>
   onEffort: (effort: Effort | null) => void
   onPain: (area: PainArea, score: number | null) => void
+  onMinutes: (minutes: number | null) => Promise<boolean>
   onComment: (comment: string) => Promise<boolean>
   onCleared: () => void
 }) {
@@ -46,6 +96,7 @@ function LogForm({
   onStatus,
   onEffort,
   onPain,
+  onMinutes,
   onComment,
   onCleared,
   onClose,
@@ -54,6 +105,7 @@ function LogForm({
   onStatus: (status: Status | null) => Promise<boolean>
   onEffort: (effort: Effort | null) => void
   onPain: (area: PainArea, score: number | null) => void
+  onMinutes: (minutes: number | null) => Promise<boolean>
   onComment: (comment: string) => Promise<boolean>
   onCleared: () => void
   onClose: () => void
@@ -103,6 +155,8 @@ function LogForm({
             onChange={(e) => onEffort(e)}
           />
         )}
+
+        {asksMinutes(session.kind) && happened && <MinutesInput value={session.log?.minutes ?? null} onSave={onMinutes} />}
 
         {area && (
           <PainScale

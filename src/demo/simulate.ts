@@ -358,7 +358,7 @@ export function buildWorld(seed = 7): Db {
       const effort =
         p.kind === 'trainer' && happened ? (hardWeek ? 'hard' : pick(r, ['light', 'medium', 'medium', 'medium', 'hard'])) : null
       const logId = id('log')
-      db.session_logs.push({ id: logId, plan_session_id: p.id, status, effort, comment, logged_at: loggedAt, user_id: DEMO_USER })
+      db.session_logs.push({ id: logId, plan_session_id: p.id, status, effort, minutes: null, comment, logged_at: loggedAt, user_id: DEMO_USER })
 
       if (['foot', 'test'].includes(p.kind) && happened && pain != null && r() < 0.85)
         db.symptoms.push({

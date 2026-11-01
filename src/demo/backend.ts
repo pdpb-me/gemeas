@@ -32,6 +32,7 @@ const WRITES = new Set<keyof Backend>([
   'setStatus',
   'setEffort',
   'setPain',
+  'setMinutes',
   'setComment',
   'setTest',
   'moveSession',

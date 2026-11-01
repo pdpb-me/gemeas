@@ -105,6 +105,7 @@ function Day({
       onStatus: (status) => day.setStatus(s(), status),
       onEffort: (effort) => day.setEffort(s(), effort),
       onPain: (area, score) => day.setPain(s(), area, score),
+      onMinutes: (minutes) => day.setMinutes(s(), minutes),
       onComment: (comment) => day.setComment(s(), comment),
       onTest: (spec, side, value) => day.setTest(s(), spec, side, value),
       onMove: async (newDate, slot) => {
@@ -256,7 +257,7 @@ function NothingPlanned({ dots, calm }: { dots: Record<string, DayDot[]>; calm: 
   if (planned)
     return (
       <EmptyNote title="Giorno di riposo" picture={calm && <Dachshunds pose="rest" />}>
-        Niente in programma. Le camminate contano comunque: puoi aggiungerle qui sotto.
+        Niente in programma.
       </EmptyNote>
     )
   return (

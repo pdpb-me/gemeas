@@ -7,7 +7,10 @@ import { dogForSport } from '@/lib/dachshunds'
 
 const LESSON_MINUTES = 45
 
-export function sessionMinutes(s: DaySession): number | null {
+// A walk, run or ride has no set length: after it, the log asks how long it was
+export const asksMinutes = (kind: string) => dogForSport(kind) != null
+
+export function sessionMinutes(s: Pick<DaySession, 'kind' | 'exercises'> & { videos: { duration_s: number | null }[] }): number | null {
   // How long she goes out is up to her: a stretching video after it says nothing about that
   if (dogForSport(s.kind)) return null
   let total = 0

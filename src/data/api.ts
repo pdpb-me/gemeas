@@ -4,6 +4,7 @@ import type {
   CheckIns,
   DayDot,
   DaySession,
+  DoneSession,
   Effort,
   LastLog,
   PainTarget,
@@ -40,6 +41,8 @@ export interface Backend {
   testResults(test: string): Promise<TestRow[]> // every result of one test, oldest first
   activities(from: string, to: string): Promise<ActivityRow[]> // newest first
   oldestActivityDate(): Promise<string | null>
+  doneSessions(from: string, to: string): Promise<DoneSession[]> // logged as done or in part
+  oldestDoneSessionDate(): Promise<string | null>
   review(weekStart: string): Promise<Review | null> // the coach's note for that week, or the latest before it
   coachAvailable(): Promise<boolean> // does this person have the chat with the coach?
   tracksFoot(): Promise<boolean> // does this person follow the foot?
@@ -50,6 +53,7 @@ export interface Backend {
   setStatus(planSessionId: string, status: Status | null): Promise<void>
   setEffort(planSessionId: string, effort: Effort | null): Promise<void>
   setPain(planSessionId: string, area: PainTarget, score: number | null): Promise<void>
+  setMinutes(planSessionId: string, minutes: number | null): Promise<void>
   setComment(planSessionId: string, comment: string | null): Promise<void>
   setTest(planSessionId: string, spec: TestTarget, side: string, value: number | null): Promise<void>
   moveSession(planSessionId: string, date: string, slot: string): Promise<void>

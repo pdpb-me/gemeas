@@ -313,6 +313,7 @@ export type Database = {
           effort: string | null
           id: string
           logged_at: string
+          minutes: number | null
           plan_session_id: string
           status: string
           user_id: string
@@ -322,6 +323,7 @@ export type Database = {
           effort?: string | null
           id?: string
           logged_at?: string
+          minutes?: number | null
           plan_session_id: string
           status: string
           user_id?: string
@@ -331,6 +333,7 @@ export type Database = {
           effort?: string | null
           id?: string
           logged_at?: string
+          minutes?: number | null
           plan_session_id?: string
           status?: string
           user_id?: string

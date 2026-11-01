@@ -260,6 +260,37 @@ export const backend: Backend = {
     return data[0]?.date ?? null
   },
 
+  async doneSessions(from, to) {
+    const rows = check(
+      await supabase
+        .from('plan_sessions')
+        .select('id, date, kind, title, exercises, video_ids, session_logs!inner(status, minutes)')
+        .gte('date', from)
+        .lte('date', to)
+        .neq('session_logs.status', 'skipped')
+        .order('date', { ascending: false })
+        .order('slot', { ascending: false })
+        .order('position', { ascending: false }),
+    )
+    const ids = [...new Set(rows.flatMap((s) => s.video_ids))]
+    const videos = ids.length ? check(await supabase.from('videos').select('yt_id, duration_s').in('yt_id', ids)) : []
+    return rows.map((s) => ({
+      id: s.id,
+      date: s.date,
+      kind: kindOf(s.kind),
+      title: s.title,
+      exercises: s.exercises,
+      status: s.session_logs.status,
+      minutes: s.session_logs.minutes,
+      videos: s.video_ids.flatMap((id) => videos.filter((v) => v.yt_id === id)),
+    }))
+  },
+
+  async oldestDoneSessionDate() {
+    const data = check(await supabase.from('plan_sessions').select('date, session_logs!inner(status)').neq('session_logs.status', 'skipped').order('date').limit(1))
+    return data[0]?.date ?? null
+  },
+
   async review(weekStart) {
     const data = check(
       await supabase
@@ -285,7 +316,7 @@ export const backend: Backend = {
           .single(),
       )
       if (clears.pain && log) check(await supabase.from('symptoms').delete().eq('session_log_id', log.id).eq('timing', 'during'))
-      if (clears.effort && log) check(await supabase.from('session_logs').update({ effort: null }).eq('id', log.id))
+      if (clears.effort && log) check(await supabase.from('session_logs').update({ effort: null, minutes: null }).eq('id', log.id))
     } else {
       check(await supabase.from('session_logs').delete().eq('plan_session_id', id)) // pain goes with it (cascade)
     }
@@ -312,6 +343,10 @@ export const backend: Backend = {
           { onConflict: 'session_log_id,body_area,timing' },
         ),
     )
+  },
+
+  async setMinutes(id, minutes) {
+    check(await supabase.from('session_logs').update({ minutes }).eq('plan_session_id', id))
   },
 
   async setComment(id, comment) {

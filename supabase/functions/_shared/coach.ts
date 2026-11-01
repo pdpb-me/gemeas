@@ -234,7 +234,7 @@ const rows = ({ data, error }: Result) => {
 }
 const one = <T,>(x: T | T[] | null | undefined) => (Array.isArray(x) ? x[0] : x) ?? null
 
-type LogRow = { status: string; effort: string | null; comment: string | null; symptoms?: { score: number; timing: string; body_area: string }[] }
+type LogRow = { status: string; effort: string | null; minutes?: number | null; comment: string | null; symptoms?: { score: number; timing: string; body_area: string }[] }
 
 const READERS: Record<string, (db: Reader, input: Record<string, unknown>) => Promise<unknown>> = {
   async get_plan(db, input) {
@@ -242,7 +242,7 @@ const READERS: Record<string, (db: Reader, input: Record<string, unknown>) => Pr
     const found = rows(
       await db
         .from('plan_sessions')
-        .select('id, date, slot, position, kind, title, instructions, exercises, video_ids, session_logs(status, effort, comment, symptoms(score, timing, body_area))')
+        .select('id, date, slot, position, kind, title, instructions, exercises, video_ids, session_logs(status, effort, minutes, comment, symptoms(score, timing, body_area))')
         .gte('date', from)
         .lte('date', to)
         .order('date')
@@ -256,6 +256,7 @@ const READERS: Record<string, (db: Reader, input: Record<string, unknown>) => Pr
         log: log && {
           status: log.status,
           effort: log.effort,
+          minutes: log.minutes,
           note: log.comment,
           pain_during: (log.symptoms ?? []).filter((s) => s.timing === 'during').map((s) => ({ area: s.body_area, word: painWord(s.score) })),
         },

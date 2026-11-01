@@ -9,6 +9,7 @@ import type { DaySession, Status } from '@/data/types'
 import { dogForSport } from '@/lib/dachshunds'
 import { asksEffort } from '@/lib/effort'
 import { plural } from '@/lib/format'
+import { asksMinutes } from '@/lib/session-time'
 import { kindWord, sessionMeta, SLOT_WORD } from '@/lib/session-words'
 import { sessionPain, STATUSES, statusLabel } from '@/lib/session-status'
 import { testFor } from '@/lib/tests'
@@ -64,7 +65,7 @@ function QuickLog({
 const needsDetails = (s: DaySession) => {
   if (!s.log || s.log.status === 'skipped') return false
   const { area, score } = sessionPain(s)
-  return (!!area && score == null) || (asksEffort(s.kind) && !s.log.effort)
+  return (!!area && score == null) || (asksEffort(s.kind) && !s.log.effort) || (asksMinutes(s.kind) && s.log.minutes == null)
 }
 
 // The day's plan: one row per session. A row opens the session; an unlogged row on today

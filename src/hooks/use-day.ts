@@ -17,8 +17,8 @@ export function useDay(date: string) {
     let log = s.log
     const st = status.get(s.id)
     if (st) {
-      log = st.value ? ({ symptoms: [], comment: null, effort: null, ...s.log, status: st.value } as SessionLog) : null
-      if (log && st.value === 'skipped') log = { ...log, effort: null, symptoms: log.symptoms.filter((x) => x.timing !== 'during') }
+      log = st.value ? ({ symptoms: [], comment: null, effort: null, minutes: null, ...s.log, status: st.value } as SessionLog) : null
+      if (log && st.value === 'skipped') log = { ...log, effort: null, minutes: null, symptoms: log.symptoms.filter((x) => x.timing !== 'during') }
     }
     const e = effort.get(s.id)
     if (log && e) log = { ...log, effort: e.value }
@@ -40,6 +40,7 @@ export function useDay(date: string) {
     setEffort: (s: DaySession, value: Effort | null) => effort.tap(s.id, value, () => write.setEffort(s.id, value)),
     setPain: (s: DaySession, area: PainTarget, score: number | null) =>
       pain.tap(`${s.id}|${area.body_area}`, score, () => write.setPain(s.id, area, score)),
+    setMinutes: (s: DaySession, minutes: number | null) => write.setMinutes(s.id, minutes),
     setComment: (s: DaySession, comment: string) => write.setComment(s.id, comment.trim() || null),
     setTest: (s: DaySession, spec: TestSpec, side: Side, value: number | null) => write.setTest(s.id, spec, side, value),
     moveSession: (s: DaySession, date: string, slot: string) => write.moveSession(s.id, date, slot),

@@ -4,16 +4,17 @@ import { Dachshunds } from '@/components/dachshunds'
 import { CardSkeleton, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import type { ActivityRow } from '@/data/types'
 import { useActivitiesMonth } from '@/hooks/use-activities-month'
 import { dogForSport } from '@/lib/dachshunds'
 import { mondayOf, shiftMonth } from '@/lib/dates'
 import { capitalize, dayLabel, dayMonth, duration, km, monthName, plural } from '@/lib/format'
+import type { HistoryRow } from '@/lib/history'
 
 const SPORT: Record<string, { label: string; icon: LucideIcon }> = {
   walk: { label: 'Camminata', icon: FootprintsIcon },
   hike: { label: 'Escursione', icon: MountainIcon },
   strength: { label: 'Forza', icon: DumbbellIcon },
+  trainer: { label: 'Personal trainer', icon: DumbbellIcon },
   indoor_cardio: { label: 'Cardio', icon: ActivityIcon },
 }
 function sportOf(s: string) {
@@ -46,7 +47,7 @@ export function Activities({ today }: { today: string }) {
         <span className="flex flex-col items-center">
           <span className="text-[17px] font-bold">{monthName(month)}</span>
           <span className="text-xs text-muted-foreground">
-            {items === undefined ? ' ' : `${plural(items.length, 'attività', 'attività')} · ${duration(total)}`}
+            {items === undefined ? ' ' : [plural(items.length, 'attività', 'attività'), total > 0 && duration(total)].filter(Boolean).join(' · ')}
           </span>
         </span>
         <Button
@@ -74,14 +75,14 @@ export function Activities({ today }: { today: string }) {
           <CardSkeleton rows={4} />
         </div>
       ) : (
-        <ActivitiesList items={items} today={today} empty={`Nessuna attività in ${monthName(month).toLowerCase()}. Le camminate si aggiungono da Oggi.`} />
+        <ActivitiesList items={items} today={today} empty={`Nessuna attività in ${monthName(month).toLowerCase()}.`} />
       )}
     </div>
   )
 }
 
 // Activities by week and day, newest first
-export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; today: string; empty: string }) {
+export function ActivitiesList({ items, today, empty }: { items: HistoryRow[]; today: string; empty: string }) {
   if (items.length === 0)
     return (
       <div className="flex flex-col gap-3 p-8 text-center text-muted-foreground">
@@ -90,9 +91,9 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
       </div>
     )
   const thisMonday = mondayOf(today)
-  const weeks = new Map<string, Map<string, ActivityRow[]>>()
+  const weeks = new Map<string, Map<string, HistoryRow[]>>()
   for (const a of items) {
-    const days = weeks.get(mondayOf(a.date)) ?? new Map<string, ActivityRow[]>()
+    const days = weeks.get(mondayOf(a.date)) ?? new Map<string, HistoryRow[]>()
     days.set(a.date, [...(days.get(a.date) ?? []), a])
     weeks.set(mondayOf(a.date), days)
   }
@@ -107,7 +108,7 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
           <section key={monday} className="flex flex-col gap-2">
             <div className="flex items-baseline justify-between px-1">
               <h2>{monday === thisMonday ? 'Questa settimana' : `Settimana del ${dayMonth(monday)}`}</h2>
-              <span className="text-sm text-muted-foreground">{[duration(time), metres ? km(metres) : null].filter(Boolean).join(' · ')}</span>
+              <span className="text-sm text-muted-foreground">{[time > 0 && duration(time), metres ? km(metres) : null].filter(Boolean).join(' · ')}</span>
             </div>
             <Card className="gap-0 py-0">
               {[...days.entries()].map(([date, rows]) => (
@@ -129,10 +130,15 @@ export function ActivitiesList({ items, today, empty }: { items: ActivityRow[]; 
                           )}
                         </span>
                         <span className="flex min-w-0 flex-1 flex-col">
-                          <span className="text-[17px] font-bold">{sport.label}</span>
-                          {a.distance_m ? <span className="truncate text-xs text-muted-foreground">{km(a.distance_m)}</span> : null}
+                          <span className="text-[17px] font-bold">{a.title ?? sport.label}</span>
+                          {a.distance_m || a.note ? <span className="truncate text-xs text-muted-foreground">{a.note ?? km(a.distance_m!)}</span> : null}
                         </span>
-                        <span className="text-[17px] font-bold tabular-nums">{duration(a.duration_s)}</span>
+                        {a.duration_s != null && (
+                          <span className="shrink-0 text-[17px] font-bold tabular-nums">
+                            {a.estimated && '~'}
+                            {duration(a.duration_s)}
+                          </span>
+                        )}
                       </div>
                     )
                   })}

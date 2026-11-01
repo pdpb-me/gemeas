@@ -19,7 +19,7 @@ import { asksEffort } from '@/lib/effort'
 import { painLabel } from '@/lib/pain'
 import { dayLabel, duration, relativeDay } from '@/lib/format'
 import type { PainArea } from '@/lib/pain-areas'
-import { sessionMinutes } from '@/lib/session-time'
+import { asksMinutes, sessionMinutes } from '@/lib/session-time'
 import { kindWord, SLOT_WORD } from '@/lib/session-words'
 import { sessionPain, STATUSES, statusLabel } from '@/lib/session-status'
 import { testFor, type Side, type TestSpec } from '@/lib/tests'
@@ -29,6 +29,7 @@ export type SessionHandlers = {
   onStatus: (status: Status | null) => Promise<boolean>
   onEffort: (effort: Effort | null) => void
   onPain: (area: PainArea, score: number | null) => void
+  onMinutes: (minutes: number | null) => Promise<boolean>
   onComment: (comment: string) => Promise<boolean>
   onTest: (spec: TestSpec, side: Side, value: number | null) => void
   onMove: (date: string, slot: string) => Promise<boolean>
@@ -100,7 +101,7 @@ export function SessionScreen({
   const pose = !exercises.length && (todayFoot ?? 0) < 5 && (score ?? 0) < 5 ? dogForSport(session.kind) : null
   const minutes = sessionMinutes(session)
   const future = session.date > today
-  const hasDetails = !!area || asksEffort(session.kind)
+  const hasDetails = !!area || asksEffort(session.kind) || asksMinutes(session.kind)
 
   async function log(status: Status) {
     const ok = await handlers.onStatus(status)
@@ -250,6 +251,7 @@ export function SessionScreen({
         onStatus={handlers.onStatus}
         onEffort={handlers.onEffort}
         onPain={handlers.onPain}
+        onMinutes={handlers.onMinutes}
         onComment={handlers.onComment}
         onCleared={() => {
           const was = session.log?.status as Status | undefined

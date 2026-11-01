@@ -37,7 +37,6 @@ export const SHOTS = [
   ['03-lezione', 'today', [wait(500), text('Lezione col trainer'), wait(500)]],
   ['04-quanto-dura', 'ordinary', [wait(500), text('Lezione col trainer'), wait(500), role('button', /^Modifica la registrazione/), wait(700)]],
   ['05-esercizio', 'gap', [wait(500), text('Forza del piede'), wait(400), text('Sollevamento talloni'), wait(500)]],
-  ['06-camminata', 'today', [wait(500), role('button', 'Aggiungi camminata'), wait(700)]],
   ['07-sposta', 'moved', [wait(500), text('Lezione col trainer'), wait(400), role('button', 'Sposta'), wait(700)]],
   ['08-saltata', 'cancelled', [wait(500), role('button', /giovedì 24 settembre/), wait(600)]],
   ['09-piede-male', 'flare', [wait(500), (p) => p.getByRole('radio', { name: 'Forte' }).first().click(), wait(600)]],
