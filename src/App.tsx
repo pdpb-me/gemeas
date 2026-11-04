@@ -42,8 +42,8 @@ function App() {
   return (
     <>
       {DemoBar && <DemoBar />}
-      {/* room for the bottom bar */}
-      <div className={deep ? undefined : 'pb-20'}>
+      {/* room for the bottom bar, and for the iPhone's home bar under it */}
+      <div className={deep ? undefined : 'pb-[calc(5rem+env(safe-area-inset-bottom))]'}>
         {tab === 'today' && <Today tracksFoot={tracksFoot} onDeepChange={setDeep} />}
         {tab === 'progress' && <Progress tracksFoot={tracksFoot} onDeepChange={setDeep} />}
         {tab === 'coach' && <CoachChat tracksFoot={tracksFoot} />}

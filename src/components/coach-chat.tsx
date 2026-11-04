@@ -141,8 +141,9 @@ export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
   }
 
   return (
-    // -mb-4: the box sits right on the tab bar, inside the room App keeps for it
-    <main className="mx-auto -mb-4 flex min-h-[calc(100svh-4rem)] max-w-md flex-col">
+    // The box sits right on the tab bar (64 px + its 2 px border), inside the room App keeps
+    // for it: where it stops at the end of the page is where it sticks, so it covers nothing
+    <main className="mx-auto -mb-[14px] flex min-h-[calc(100svh-4rem)] max-w-md flex-col">
       <header className="border-b bg-card px-4 pt-4 pb-3">
         <h1 className="text-display font-bold">Coach</h1>
       </header>
