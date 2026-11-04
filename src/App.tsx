@@ -1,9 +1,9 @@
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChartLineIcon, DumbbellIcon, MessageSquareTextIcon, SunIcon } from 'lucide-react'
 import { CoachChat } from '@/components/coach-chat'
 import { Login } from '@/components/login'
 import { Progress } from '@/components/progress'
-import { CardSkeleton } from '@/components/states'
+import { LazyPart } from '@/components/states'
 import { Today } from '@/components/today'
 import { DemoBar, DemoLibrary } from '@/data/backend'
 import { syncWatch } from '@/data/store'
@@ -48,9 +48,9 @@ function App() {
         {tab === 'progress' && <Progress tracksFoot={tracksFoot} onDeepChange={setDeep} />}
         {tab === 'coach' && <CoachChat tracksFoot={tracksFoot} />}
         {tab === 'library' && DemoLibrary && (
-          <Suspense fallback={<CardSkeleton className="m-4" />}>
+          <LazyPart what="gli esercizi">
             <DemoLibrary />
-          </Suspense>
+          </LazyPart>
         )}
       </div>
       {!deep && (

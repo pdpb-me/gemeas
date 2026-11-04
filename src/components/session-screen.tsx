@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { CalendarArrowUpIcon, InfoIcon, PlayIcon, TriangleAlertIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { Dachshunds } from '@/components/dachshunds'
@@ -83,11 +83,13 @@ export function SessionScreen({
   onBack,
   onOpenExercise,
   openLog = false,
+  logDone = false,
 }: {
   session: DaySession
   today: string
   handlers: SessionHandlers
   openLog?: boolean
+  logDone?: boolean // back from "Fine e registra": log it as done, the same way as tapping Fatto
   onBack: () => void
   onOpenExercise: (index: number) => void
 }) {
@@ -114,6 +116,13 @@ export function SessionScreen({
       onBack()
     }
   }
+
+  const loggedOnce = useRef(false)
+  useEffect(() => {
+    if (!logDone || loggedOnce.current || session.log || test) return
+    loggedOnce.current = true
+    void log('done')
+  })
 
   return (
     <div className={cn('flex flex-col', future ? 'pb-10' : 'pb-36')}>
@@ -254,8 +263,16 @@ export function SessionScreen({
         onMinutes={handlers.onMinutes}
         onComment={handlers.onComment}
         onCleared={() => {
-          const was = session.log?.status as Status | undefined
-          toast('Registrazione cancellata', was ? { action: { label: 'Annulla', onClick: () => void handlers.onStatus(was) } } : undefined)
+          const was = session.log
+          // Annulla brings back all of it: the status, then the effort, pain, minutes and note
+          const restore = async () => {
+            if (!was || !(await handlers.onStatus(was.status as Status))) return
+            if (was.effort) handlers.onEffort(was.effort as Effort)
+            if (area && score != null) handlers.onPain(area, score)
+            if (was.minutes != null) await handlers.onMinutes(was.minutes)
+            if (was.comment) await handlers.onComment(was.comment)
+          }
+          toast('Registrazione cancellata', was ? { action: { label: 'Annulla', onClick: () => void restore() } } : undefined)
         }}
       />
 

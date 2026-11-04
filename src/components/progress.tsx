@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { MessageSquareTextIcon } from 'lucide-react'
 import { CoachNoteSheet } from '@/components/coach-note'
-import { EmptyNote, ErrorCard } from '@/components/states'
+import { EmptyNote, ErrorCard, LazyPart } from '@/components/states'
 import { RowArrow, StatusMark } from '@/components/status-mark'
 import { TestHistory } from '@/components/test-card'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import { useNextTest, useProgress, useReview, useWeekDots } from '@/hooks/use-da
 import { useScreens } from '@/hooks/use-screens'
 import { useToday } from '@/lib/clock'
 import { addDays, daysBetween, mondayOf, weekOf } from '@/lib/dates'
-import { dayLabel, dayMonth, inDays, kg, plural, weekdayLetter, weekdayShort } from '@/lib/format'
+import { atPercent, dayLabel, dayMonth, inDays, kg, plural, weekdayLetter, weekdayShort } from '@/lib/format'
 import { painBand, painHeight, painLabel } from '@/lib/pain'
 import { countsAsDone, PAIN_DOT } from '@/lib/session-status'
 import { rightOfLeft, testDays } from '@/lib/tests'
@@ -44,15 +44,15 @@ export function Progress({ tracksFoot, onDeepChange }: { tracksFoot: boolean | u
 
   if (nav.screen.kind === 'pain' && data)
     return (
-      <Suspense>
+      <LazyPart what="il dettaglio del piede">
         <PainDetail data={data} onBack={nav.back} />
-      </Suspense>
+      </LazyPart>
     )
   if (nav.screen.kind === 'weight' && data)
     return (
-      <Suspense>
+      <LazyPart what="il dettaglio del peso">
         <WeightDetail data={data} onBack={nav.back} />
-      </Suspense>
+      </LazyPart>
     )
 
   return (
@@ -82,9 +82,9 @@ export function Progress({ tracksFoot, onDeepChange }: { tracksFoot: boolean | u
           )}
         </TabsContent>
         <TabsContent value="activities">
-          <Suspense fallback={<OverviewSkeleton />}>
+          <LazyPart what="le attività" fallback={<OverviewSkeleton />}>
             <Activities today={today} />
-          </Suspense>
+          </LazyPart>
         </TabsContent>
       </Tabs>
     </main>
@@ -219,7 +219,7 @@ function WeekCard({ today }: { today: string }) {
       <CardTitle title="Questa settimana" sub={`${dayMonth(days[0])} – ${dayMonth(days[6])}`} chevron={false} />
       <div className="flex items-end justify-between gap-3">
         <div className="flex flex-col">
-          {done === 0 && skipped > 0 ? (
+          {done === 0 && skipped > 0 && partial === 0 && all.every((d) => d.status != null) ? (
             <span className="text-display font-bold">Settimana di riposo</span>
           ) : (
             <span className="flex items-baseline gap-1.5">
@@ -228,7 +228,7 @@ function WeekCard({ today }: { today: string }) {
             </span>
           )}
           <span className="text-sm text-muted-foreground">
-            {[partial > 0 && `${partial} in parte`, skipped > 0 && `${skipped} saltati`].filter(Boolean).join(' · ') || ' '}
+            {[partial > 0 && `${partial} in parte`, skipped > 0 && plural(skipped, 'saltato', 'saltati')].filter(Boolean).join(' · ') || ' '}
           </span>
         </div>
         <div className="flex items-end gap-1.5" aria-hidden>
@@ -274,7 +274,7 @@ function FootCard({ s, onOpen }: { s: AreaSummary; onOpen: () => void }) {
       ) : (
         <span className="flex flex-col gap-0.5">
           <span className="text-[17px] font-bold">Ancora poche risposte</span>
-          <span className="text-sm text-muted-foreground">{s.answered} risposte negli ultimi 7 giorni. Compare da 3.</span>
+          <span className="text-sm text-muted-foreground">{plural(s.answered, 'risposta', 'risposte')} negli ultimi 7 giorni. Compare da 3.</span>
         </span>
       )}
       <span className="flex h-12 items-end gap-0.5 border-b-2" aria-hidden>
@@ -303,7 +303,8 @@ function TestCard({ data }: { data: ProgressData }) {
   const first = days[0]
   const last = days[days.length - 1]
   if (!last && !next) return null
-  const nextText = next
+  // today's test, once its results are in, isn't the next one any more
+  const nextText = next && !(next.date === data.today && last?.date === data.today)
     ? `Prossimo test ${inDays(next.date, data.today) === 'oggi' ? 'oggi' : `${dayLabel(next.date)} (${inDays(next.date, data.today)})`}`
     : null
   return (
@@ -331,7 +332,7 @@ function TestCard({ data }: { data: ProgressData }) {
           <span className="text-base text-muted-foreground">Ancora nessun risultato.</span>
         )}
         <span className="text-sm text-muted-foreground">
-          {[last && rightOfLeft(last) != null && `Destra al ${rightOfLeft(last)}% della sinistra (${dayMonth(last.date)})`, nextText]
+          {[last && rightOfLeft(last) != null && `Destra ${atPercent(rightOfLeft(last)!)} della sinistra (${dayMonth(last.date)})`, nextText]
             .filter(Boolean)
             .join(' · ')}
         </span>

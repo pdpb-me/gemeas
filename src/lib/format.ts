@@ -45,3 +45,6 @@ export const km = (metres: number) => `${decimal(metres / 1000)} km`
 export const kg = (n: number) => `${decimal(n)} kg`
 
 export const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+
+// "al 50%", but "all'80%", "all'8%", "all'11%": the number is read with a vowel first
+export const atPercent = (n: number) => `${n === 1 || n === 11 || String(n).startsWith('8') ? "all'" : 'al '}${n}%`

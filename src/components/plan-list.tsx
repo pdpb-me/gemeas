@@ -89,7 +89,7 @@ export function PlanList({
   const past = date < today
   const open = sessions.filter((s) => !s.log)
   const count = (st: string) => sessions.filter((s) => s.log?.status === st).length
-  const loggedText = [count('done') && `${count('done')} fatti`, count('partial') && `${count('partial')} in parte`, count('skipped') && `${count('skipped')} saltati`]
+  const loggedText = [count('done') && plural(count('done'), 'fatto', 'fatti'), count('partial') && `${count('partial')} in parte`, count('skipped') && plural(count('skipped'), 'saltato', 'saltati')]
     .filter(Boolean)
     .join(' · ')
 

@@ -86,6 +86,8 @@ function Day({
   const isToday = date === today
   const deep = nav.screen.kind !== 'day'
   const ask = dueCheckIn(date, today)
+  const [finished, setFinished] = useState<string | null>(null)
+  if (nav.screen.kind === 'day' && finished) setFinished(null)
 
   useEffect(() => {
     onDeepChange(deep)
@@ -131,8 +133,12 @@ function Day({
           today={today}
           handlers={handlers(current.id)}
           openLog={nav.screen.kind === 'session' && !!nav.screen.openLog}
+          logDone={finished === current.id}
           onBack={nav.back}
-          onOpenExercise={(index) => nav.push({ kind: 'exercise', id: current.id, index })}
+          onOpenExercise={(index) => {
+            setFinished(null)
+            nav.push({ kind: 'exercise', id: current.id, index })
+          }}
         />
       </main>
     )
@@ -145,8 +151,9 @@ function Day({
           index={nav.screen.index}
           onBack={nav.back}
           onIndex={(index) => nav.replace({ kind: 'exercise', id: current.id, index })}
-          onFinish={async () => {
-            if (!current.log) await day.setStatus(current, 'done')
+          onFinish={() => {
+            // the session screen logs it, with its questions and Annulla (a test asks for its numbers there)
+            setFinished(current.id)
             nav.back()
           }}
         />

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { SendIcon } from 'lucide-react'
 import { CardSkeleton, EmptyNote, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
@@ -19,8 +19,24 @@ const SUGGESTIONS = ['Cosa faccio oggi?', FOOT_SUGGESTION, 'Facciamo il punto de
 const TALLEST_BOX = 160 // px; a longer message scrolls inside the box
 const NEAR_END = 120 // px
 
-// What she was writing stays when she looks at another tab
-const kept = { draft: '' }
+// What she is writing and the message on its way live outside the screen: they stay when
+// she looks at another tab, and a reply that arrives (or fails) meanwhile still lands here
+type Chat = {
+  draft: string
+  sending: boolean
+  failed: string | null
+  pending: { text: string; reply: string; lastId?: string } | null
+}
+let chat: Chat = { draft: '', sending: false, failed: null, pending: null }
+const listeners = new Set<() => void>()
+const setChat = (change: Partial<Chat>) => {
+  chat = { ...chat, ...change }
+  listeners.forEach((l) => l())
+}
+const subscribe = (l: () => void) => {
+  listeners.add(l)
+  return () => void listeners.delete(l)
+}
 
 function Bubble({ role, children }: { role: ChatMessage['role']; children: string }) {
   return (
@@ -84,10 +100,8 @@ export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
   const today = useToday()
   const messages = useChatMessages()
   const proposals = useChatProposals().data
-  const [text, setText] = useState(kept.draft)
-  const [sending, setSending] = useState(false)
-  const [failed, setFailed] = useState<string | null>(null)
-  const [pending, setPending] = useState<{ text: string; reply: string; lastId?: string } | null>(null)
+  const { draft: text, sending, failed, pending } = useSyncExternalStore(subscribe, () => chat)
+  const setText = (draft: string) => setChat({ draft })
   const box = useRef<HTMLTextAreaElement>(null)
   const followEnd = useRef(true)
 
@@ -97,16 +111,14 @@ export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
   const showPending = pending && !(last && last.id !== pending.lastId && last.role === 'coach')
   const cards = placeProposals(saved ?? [], proposals ?? [])
 
-  useEffect(() => {
-    kept.draft = text
-  }, [text])
-
   // Grows with the text (not every Safari can do it with CSS alone)
   useLayoutEffect(() => {
     const el = box.current
     if (!el) return
     el.style.height = 'auto'
     el.style.height = `${Math.min(el.scrollHeight, TALLEST_BOX)}px`
+    // a taller box shouldn't cover the last message
+    if (followEnd.current) window.scrollTo(0, document.documentElement.scrollHeight)
   }, [text, saved])
 
   // Reading older messages: a new word shouldn't pull her back to the end
@@ -124,19 +136,14 @@ export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
 
   const send = async () => {
     const message = text.trim()
-    if (sending || !LIMITS.chat(message)) return
-    setText('')
-    setFailed(null)
-    setSending(true)
+    if (chat.sending || !saved || !LIMITS.chat(message)) return
     followEnd.current = true
-    setPending({ text: message, reply: '', lastId: last?.id })
-    const problem = await sendChat(message, (reply) => setPending((p) => p && { ...p, reply }))
-    setSending(false)
+    setChat({ draft: '', failed: null, sending: true, pending: { text: message, reply: '', lastId: last?.id } })
+    const problem = await sendChat(message, (reply) => setChat({ pending: chat.pending && { ...chat.pending, reply } }))
+    setChat({ sending: false })
     if (problem) {
-      setPending(null)
-      setFailed(problem)
       // nothing she wrote is lost, unless she has started another message
-      setText(kept.draft || message)
+      setChat({ pending: null, failed: problem, draft: chat.draft || message })
     }
   }
 
@@ -202,17 +209,25 @@ export function CoachChat({ tracksFoot }: { tracksFoot: boolean | undefined }) {
           void send()
         }}
       >
-        <Textarea
-          ref={box}
-          rows={1}
-          value={text}
-          maxLength={CHAT_MAX_CHARS}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Scrivi al coach…"
-          aria-label="Messaggio al coach"
-          className="min-h-11 resize-none md:text-base"
-        />
-        <Button type="submit" className="size-11 shrink-0 rounded-full p-0" disabled={sending || !LIMITS.chat(text)} aria-label="Invia">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <Textarea
+            ref={box}
+            rows={1}
+            value={text}
+            maxLength={CHAT_MAX_CHARS}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Scrivi al coach…"
+            aria-label="Messaggio al coach"
+            className="min-h-11 resize-none md:text-base"
+          />
+          {/* near the limit, so a long paste isn't cut without a word */}
+          {text.length > CHAT_MAX_CHARS - 200 && (
+            <span className="self-end font-mono text-xs text-muted-foreground" aria-live="polite">
+              {text.length} / {CHAT_MAX_CHARS}
+            </span>
+          )}
+        </div>
+        <Button type="submit" className="size-11 shrink-0 rounded-full p-0" disabled={sending || !saved || !LIMITS.chat(text)} aria-label="Invia">
           <SendIcon />
         </Button>
       </form>

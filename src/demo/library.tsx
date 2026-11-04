@@ -17,11 +17,13 @@ const TYPES: { id: VideoType | 'all'; label: string }[] = [
   { id: 'yoga', label: 'Yoga' },
 ]
 const LENGTHS = [
-  { id: 'all', label: 'Tutte', from: 0, to: Infinity },
-  { id: 'short', label: 'Fino a 15 min', from: 0, to: 900 },
-  { id: 'mid', label: '15–30 min', from: 900, to: 1800 },
-  { id: 'long', label: 'Oltre 30', from: 1800, to: Infinity },
+  { id: 'all', label: 'Tutte', from: 0, to: Infinity }, // minutes, as each video shows them
+  { id: 'short', label: 'Fino a 15 min', from: 0, to: 15 },
+  { id: 'mid', label: '15–30 min', from: 16, to: 30 },
+  { id: 'long', label: 'Oltre 30', from: 31, to: Infinity },
 ]
+const minutes = (seconds: number) => Math.round(seconds / 60)
+
 // The kind of session a video becomes in the plan
 const KIND: Record<VideoType, string> = { foot: 'foot', pilates: 'strength', strength: 'strength', yoga: 'mobility' }
 const POSE = { foot: 'ball', pilates: 'plank', strength: 'lift', yoga: 'sit' } as const
@@ -86,7 +88,7 @@ export default function Library() {
   const [length, setLength] = useState('all')
   const [open, setOpen] = useState<string | null>(null)
   const span = LENGTHS.find((l) => l.id === length)!
-  const shown = LIBRARY.filter((v) => (type === 'all' || v.type === type) && v.duration_s >= span.from && v.duration_s < span.to)
+  const shown = LIBRARY.filter((v) => (type === 'all' || v.type === type) && minutes(v.duration_s) >= span.from && minutes(v.duration_s) <= span.to)
 
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col">
@@ -102,7 +104,7 @@ export default function Library() {
           <span className="dot" />
           {plural(shown.length, 'video', 'video')}
         </span>
-        {shown.length === 0 && <EmptyNote title="Nessun video">Prova un’altra durata.</EmptyNote>}
+        {shown.length === 0 && <EmptyNote title="Nessun video">Prova un altro tipo o un’altra durata.</EmptyNote>}
         <div className="rows">
           {shown.map((v) => {
             const isOpen = open === v.yt_id
@@ -118,7 +120,7 @@ export default function Library() {
                   </span>
                   <span className="end">
                     <span className="flex items-baseline gap-1">
-                      <span className="value">{Math.round(v.duration_s / 60)}</span>
+                      <span className="value">{minutes(v.duration_s)}</span>
                       <span className="font-mono text-xs">min</span>
                     </span>
                     <span className="mark" aria-hidden>

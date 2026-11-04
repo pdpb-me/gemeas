@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { dueCheckIn } from '@/lib/check-ins'
 import { addDays, appDay, daysBetween, toISODate, weekOf } from '@/lib/dates'
-import { dayMonth, duration, inDays, kg, km, monthName, plural, relativeDay } from '@/lib/format'
+import { atPercent, dayMonth, duration, inDays, kg, km, monthName, plural, relativeDay } from '@/lib/format'
 import { painBand, painLabel, painLevelFor } from '@/lib/pain'
 import { compare, dailySeries, footSummary, headline, zoneLine } from '@/lib/trends'
 import { rightOfLeft, testDays } from '@/lib/tests'
@@ -32,6 +32,10 @@ describe('dates (local calendar days)', () => {
 })
 
 describe('words in Italian', () => {
+  it("says al or all' before a percentage", () => {
+    expect([50, 100, 18, 80, 85, 8, 11, 1].map(atPercent)).toEqual(['al 50%', 'al 100%', 'al 18%', "all'80%", "all'85%", "all'8%", "all'11%", "all'1%"])
+  })
+
   it('writes dates, amounts and plurals', () => {
     expect(dayMonth('2026-11-19')).toBe('19 nov')
     expect(monthName('2026-11')).toBe('Novembre 2026')

@@ -4,6 +4,7 @@ import { Dachshunds } from '@/components/dachshunds'
 import { CardSkeleton, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { isPill } from '@/data/rules'
 import { useActivitiesMonth } from '@/hooks/use-activities-month'
 import { dogForSport } from '@/lib/dachshunds'
 import { mondayOf, shiftMonth } from '@/lib/dates'
@@ -29,7 +30,9 @@ export function Activities({ today }: { today: string }) {
   const thisMonth = mondayOf(today).slice(0, 7) // the month this week belongs to
   const [month, setMonth] = useState(thisMonth)
   const { items, error, retry, oldestMonth } = useActivitiesMonth(month)
-  const total = (items ?? []).reduce((t, a) => t + (a.duration_s ?? 0), 0)
+  // pills are listed, but stay out of the counts
+  const counted = (items ?? []).filter((a) => !isPill(a.sport))
+  const total = counted.reduce((t, a) => t + (a.duration_s ?? 0), 0)
 
   return (
     <div className="flex flex-col">
@@ -47,7 +50,7 @@ export function Activities({ today }: { today: string }) {
         <span className="flex flex-col items-center">
           <span className="text-[17px] font-bold">{monthName(month)}</span>
           <span className="text-xs text-muted-foreground">
-            {items === undefined ? ' ' : [plural(items.length, 'attività', 'attività'), total > 0 && duration(total)].filter(Boolean).join(' · ')}
+            {items === undefined ? ' ' : [plural(counted.length, 'attività', 'attività'), total > 0 && duration(total)].filter(Boolean).join(' · ')}
           </span>
         </span>
         <Button

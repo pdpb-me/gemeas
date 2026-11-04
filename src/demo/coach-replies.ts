@@ -56,7 +56,7 @@ function weekNote(today: string) {
 
 function intentOf(text: string) {
   const said = text.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
-  if (/\b(male|dolor\w*|piede)\b/.test(said)) return 'foot'
+  if (/\b(piede|dolor\w*|fa male)\b/.test(said)) return 'foot' // not "ho dormito male"
   if (/\b(peso|kg|chili|dimagr\w*)\b/.test(said)) return 'weight'
   if (/\b(punto|settimana|rivedi\w*|review)\b/.test(said)) return 'review'
   if (/\b(spost\w*|cambi\w*|modific\w*|salt\w*|annull\w*)\b/.test(said)) return 'move'

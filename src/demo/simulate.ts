@@ -169,7 +169,7 @@ const REVIEWS: Record<number, { summary: string; decisions: string }> = {
     decisions: 'Lunedì nuovo test, per vedere come sta il destro.',
   },
   9: {
-    summary: 'Test: sinistra 20, destra 16 ripetizioni. Il destro sale, da 13 di settembre. Due lezioni fatte e piede quasi sempre Nessuno.',
+    summary: 'Test: sinistra 20, destra 16 ripetizioni. Il destro sale, dal 13 settembre. Due lezioni fatte e piede quasi sempre Nessuno.',
     decisions: 'Nuovo blocco da lunedì. Vacanza da sabato 7 novembre: niente piano finché non torni.',
   },
   10: {

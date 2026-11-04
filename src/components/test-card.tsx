@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { TestResult } from '@/data/types'
 import { useTestResults } from '@/hooks/use-data'
-import { dayMonth } from '@/lib/format'
+import { atPercent, dayMonth } from '@/lib/format'
 import { rightOfLeft, SIDES, testDays, type Side, type TestDay, type TestSpec } from '@/lib/tests'
 
 // The heel-raise test on its own session screen: Left / Right boxes, with last time's
@@ -113,7 +113,7 @@ export function TestHistory({ days, open, onOpenChange }: { days: TestDay[]; ope
               <li key={d.date} className="flex flex-col gap-1.5">
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm font-bold">{dayMonth(d.date)}</span>
-                  {rightOfLeft(d) != null && <span className="text-sm text-muted-foreground">Destra al {rightOfLeft(d)}% della sinistra</span>}
+                  {rightOfLeft(d) != null && <span className="text-sm text-muted-foreground">Destra {atPercent(rightOfLeft(d)!)} della sinistra</span>}
                 </div>
                 {(['L', 'R'] as const).map((side) => (
                   <div key={side} className="flex items-center gap-2 text-sm">

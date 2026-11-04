@@ -18,6 +18,9 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
   const from = addDays(data.today, -(range.days - 1))
   const entries = data.weights.filter((w) => w.date >= from && w.date <= data.today)
   const now = averageKg(data.weights, from, data.today)
+  // The chart starts at the first weight, if that's later (no empty months)
+  const start = entries[0] && entries[0].date > from ? entries[0].date : from
+  const span = Math.max(daysBetween(start, data.today), 1)
   const last = data.weights[data.weights.length - 1]
 
   // Weekly averages (7-day blocks ending today), drawn at the middle of each block
@@ -26,14 +29,14 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
     const avg = averageKg(data.weights, addDays(end, -6), end)
     return avg ? { date: addDays(end, -3), kg: avg.kg } : null
   })
-    .filter((w): w is { date: string; kg: number } => w != null && w.date >= from)
+    .filter((w): w is { date: string; kg: number } => w != null && w.date >= start)
     .reverse()
 
   const all = entries.map((e) => e.kg)
   const lo = Math.floor(Math.min(...all, Infinity) - 0.5)
   const hi = Math.ceil(Math.max(...all, -Infinity) + 0.5)
   const y = (kg: number) => 200 - ((kg - lo) / Math.max(hi - lo, 1)) * 180
-  const x = (date: string) => X0 + (daysBetween(from, date) / (range.days - 1)) * (X1 - X0)
+  const x = (date: string) => X0 + (daysBetween(start, date) / span) * (X1 - X0)
   const gridKg = entries.length ? [lo, (lo + hi) / 2, hi] : []
 
   return (
@@ -42,7 +45,7 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
         <RangeTabs value={rangeId} onChange={setRangeId} />
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Media, {range.text}</span>
+            <span className="text-sm text-muted-foreground">Media, {start > from ? `dal ${dayMonth(start)}` : range.text}</span>
             <span className="font-mono text-hero font-medium tabular-nums">{now ? decimal(now.kg) : '–'}</span>
             <span className="text-sm text-muted-foreground">{now ? `kg · ${plural(now.n, 'valore', 'valori')}` : 'Nessun valore'}</span>
           </div>
@@ -82,7 +85,7 @@ export function WeightDetail({ data, onBack }: { data: ProgressData; onBack: () 
               />
             ))}
             {[0, 0.5, 1].map((f) => {
-              const d = addDays(from, Math.round(f * (range.days - 1)))
+              const d = addDays(start, Math.round(f * span))
               return (
                 <text
                   key={f}

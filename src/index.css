@@ -151,6 +151,11 @@
   @keyframes pop { from { opacity: 0.6; } }
 }
 
+/* Tap targets of at least 44 px (the DLS has 40) */
+.ranges button {
+  min-height: 44px;
+}
+
 /* "Partly": half filled, so it reads by shape */
 .status-half {
   background: linear-gradient(90deg, var(--ink) 50%, transparent 50%);

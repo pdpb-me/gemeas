@@ -1,5 +1,5 @@
 import { CloudOffIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { Component, Suspense, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -49,5 +49,27 @@ export function CardSkeleton({ rows = 2, className }: { rows?: number; className
         </div>
       ))}
     </Card>
+  )
+}
+
+// A part of the app that loads when first opened. If its file can't be fetched (offline, or
+// a new version went out meanwhile) it shows the error card instead of a blank app.
+class Fallible extends Component<{ what: string; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    // a fresh start fetches the files again, and the newest ones
+    if (this.state.failed) return <ErrorCard what={this.props.what} className="m-4" onRetry={() => location.reload()} />
+    return this.props.children
+  }
+}
+
+export function LazyPart({ what, fallback = <CardSkeleton className="m-4" />, children }: { what: string; fallback?: ReactNode; children: ReactNode }) {
+  return (
+    <Fallible what={what}>
+      <Suspense fallback={fallback}>{children}</Suspense>
+    </Fallible>
   )
 }

@@ -40,7 +40,16 @@ function load(): Saved | null {
     url.searchParams.delete('scenario')
     history.replaceState(history.state, '', url) // a reload keeps what you tapped
   }
-  if (s) return fresh(s)
+  if (s) {
+    // remembered at once: the link has left the address, so a reload stays on this moment
+    const opened = fresh(s)
+    try {
+      localStorage.setItem(KEY, JSON.stringify(opened))
+    } catch {
+      // Private window or full storage: it just forgets on reload
+    }
+    return opened
+  }
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Saved | null
     // saved before the demo had a chat: keep the place
