@@ -142,6 +142,15 @@ describe('the chat', () => {
       expect(db.plan_sessions[0].date).toBe(today())
     })
 
+    it('applies nothing if she logged the session in the meantime', async () => {
+      await api.sendChat('Puoi spostare la seduta?', () => {})
+      const { id } = await pending()
+      await api.setStatus('p', 'done')
+      await api.decideProposal(id, true)
+      expect((await pending()).status).toBe('stale')
+      expect(db.plan_sessions[0].date).toBe(today())
+    })
+
     it('counts one decision only', async () => {
       await api.sendChat('Puoi spostare la seduta?', () => {})
       const { id } = await pending()

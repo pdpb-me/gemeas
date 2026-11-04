@@ -232,7 +232,9 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       for (const c of proposal.changes) {
         if (c.op !== 'move') continue
         const session = d.plan_sessions.find((p) => p.id === c.session_id)
-        if (!session || session.date !== c.before.date || session.slot !== c.before.slot) {
+        // she logged it after the coach proposed: the coach didn't know (same check as the SQL)
+        const loggedSince = d.session_logs.some((l) => l.plan_session_id === c.session_id && l.logged_at >= proposal.created_at)
+        if (!session || session.date !== c.before.date || session.slot !== c.before.slot || loggedSince) {
           proposal.status = 'stale'
           return
         }
