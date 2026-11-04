@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { data as store } from '@/data/store'
 import type { ProgressData } from '@/data/types'
 import { useNextTest, useProgress, useReview, useWeekDots } from '@/hooks/use-data'
+import { useKept } from '@/hooks/use-kept'
 import { useScreens } from '@/hooks/use-screens'
 import { useToday } from '@/lib/clock'
 import { addDays, daysBetween, mondayOf, weekOf } from '@/lib/dates'
@@ -34,7 +35,7 @@ export function Progress({ tracksFoot, onDeepChange }: { tracksFoot: boolean | u
   const today = useToday()
   const progress = useProgress(today)
   const nav = useScreens<Screen>({ kind: 'overview' })
-  const [tab, setTab] = useState<'overview' | 'activities'>('overview')
+  const [tab, setTab] = useKept<'overview' | 'activities'>('progress-tab', 'overview')
   const deep = nav.screen.kind !== 'overview'
   const data = progress.data
 

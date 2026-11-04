@@ -51,7 +51,7 @@ Vite + React 19 + TypeScript + Tailwind 4 + shadcn/ui, Supabase.
 
 ## Data words
 
-- Session kinds (free text from the coach, lower case): `trainer`, `strength`, `mobility`, `foot`, `pill`, `test`, `walk`, `run`, `cycle`. `position` orders a pill before or after a workout in the same slot. Pills stay out of the week's dots and counts.
+- Session kinds (free text from the coach, lower case): `trainer`, `strength`, `mobility`, `foot`, `pill`, `test`, `walk`, `run`, `cycle`. `position` orders a pill before or after a workout in the same slot. Pills count like the other sessions: in the week's dots and counts too.
 - `session_logs.effort`: `light`, `medium`, `hard`, asked after `trainer` sessions.
 - Per person, in `gemeas.coach_profiles`: `tracks_foot` (off: no foot question, no foot on Progressi; the demo shows it with `?foot=0`) and `videos_from` (she reads that person's video list too, and can't change it). Only an admin sets them.
 - Foot: `body_area 'foot'`, `side 'R'`, in one place (`FOOT` in `rules.ts`). Morning answer: `timing 'next_morning'`. Pain: 5 words stored as 0/2/5/8/10 (Nessuno, Lieve, Medio, Forte, Massimo).

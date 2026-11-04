@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import { ActivityIcon, ChevronLeftIcon, ChevronRightIcon, DumbbellIcon, FootprintsIcon, MountainIcon, type LucideIcon } from 'lucide-react'
 import { Dachshunds } from '@/components/dachshunds'
 import { CardSkeleton, ErrorCard } from '@/components/states'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { isPill } from '@/data/rules'
 import { useActivitiesMonth } from '@/hooks/use-activities-month'
+import { useKept } from '@/hooks/use-kept'
 import { dogForSport } from '@/lib/dachshunds'
 import { mondayOf, shiftMonth } from '@/lib/dates'
 import { capitalize, dayLabel, dayMonth, duration, km, monthName, plural } from '@/lib/format'
@@ -28,11 +27,9 @@ function sportOf(s: string) {
 // Activities tab: one month at a time (‹ Novembre 2026 ›), its weeks newest first, by day
 export function Activities({ today }: { today: string }) {
   const thisMonth = mondayOf(today).slice(0, 7) // the month this week belongs to
-  const [month, setMonth] = useState(thisMonth)
+  const [month, setMonth] = useKept(`activities-month:${thisMonth}`, thisMonth)
   const { items, error, retry, oldestMonth } = useActivitiesMonth(month)
-  // pills are listed, but stay out of the counts
-  const counted = (items ?? []).filter((a) => !isPill(a.sport))
-  const total = counted.reduce((t, a) => t + (a.duration_s ?? 0), 0)
+  const total = (items ?? []).reduce((t, a) => t + (a.duration_s ?? 0), 0)
 
   return (
     <div className="flex flex-col">
@@ -50,7 +47,7 @@ export function Activities({ today }: { today: string }) {
         <span className="flex flex-col items-center">
           <span className="text-[17px] font-bold">{monthName(month)}</span>
           <span className="text-xs text-muted-foreground">
-            {items === undefined ? ' ' : [plural(counted.length, 'attività', 'attività'), total > 0 && duration(total)].filter(Boolean).join(' · ')}
+            {items === undefined ? ' ' : [plural(items.length, 'attività', 'attività'), total > 0 && duration(total)].filter(Boolean).join(' · ')}
           </span>
         </span>
         <Button

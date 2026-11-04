@@ -1,7 +1,7 @@
 // The real backend: the Supabase project, schema `gemeas`. Only this file and supabase-client.ts
 // talk to Supabase; the demo build swaps it out (see src/data/backend.ts).
 import type { Backend } from '@/data/api'
-import { checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, isPill, kindOf, walkRow } from '@/data/rules'
+import { checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, kindOf, walkRow } from '@/data/rules'
 import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/data/supabase-client'
 import type { ChatMessage, CheckIns, DayDot, DaySession, Video } from '@/data/types'
 import { now } from '@/lib/clock'
@@ -123,7 +123,6 @@ export const backend: Backend = {
     )
     const byDay: Record<string, DayDot[]> = {}
     for (const s of data) {
-      if (isPill(s.kind)) continue
       ;(byDay[s.date] ??= []).push({ id: s.id, slot: s.slot, kind: kindOf(s.kind), status: s.session_logs?.status ?? null })
     }
     return byDay

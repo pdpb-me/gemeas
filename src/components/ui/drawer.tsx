@@ -1,10 +1,15 @@
 import * as React from "react"
 import { cn } from "cn"
+import { toast } from "sonner"
 import { Drawer as DrawerPrimitive } from "vaul"
 
 function Drawer({
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+  // a message left from before mustn't sit on top of the sheet
+  React.useEffect(() => {
+    if (props.open) toast.dismiss()
+  }, [props.open])
   return <DrawerPrimitive.Root data-slot="drawer" {...props} />
 }
 

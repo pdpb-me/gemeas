@@ -16,6 +16,7 @@ import { write } from '@/data/store'
 import type { DayDot, DaySession } from '@/data/types'
 import { useCheckIns } from '@/hooks/use-check-ins'
 import { useLastLog, useReview, useWeekDots } from '@/hooks/use-data'
+import { useKept } from '@/hooks/use-kept'
 import { useDay } from '@/hooks/use-day'
 import { useScreens } from '@/hooks/use-screens'
 import { useHour, useToday } from '@/lib/clock'
@@ -32,7 +33,8 @@ type Screen = { kind: 'day' } | { kind: 'session'; id: string; openLog?: boolean
 export function Today({ tracksFoot, onDeepChange }: { tracksFoot: boolean | undefined; onDeepChange: (deep: boolean) => void }) {
   const today = useToday()
   // the chosen day; null follows today (also when the app is reopened the next morning)
-  const [picked, setPicked] = useState<string | null>(null)
+  // kept while she looks at another tab (but a new day starts on today)
+  const [picked, setPicked] = useKept<string | null>(`today-picked:${today}`, null)
   const date = picked ?? today
   // the strip shows the chosen day's week; swiping or the arrows go to the same weekday
   // in the week before or after, so the strip and the page always agree
@@ -298,7 +300,7 @@ function TodayNotes({
 
   const open = (dots[yesterday] ?? []).filter((d) => !d.status).length
   const missing = [
-    open > 0 && (open === 1 ? 'un allenamento' : `${open} allenamenti`),
+    open > 0 && (open === 1 ? 'una seduta' : `${open} sedute`),
     tracksFoot && yCheckIns && yCheckIns.foot == null && 'il check-in',
   ].filter((x): x is string => !!x)
 

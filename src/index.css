@@ -167,4 +167,9 @@
   box-shadow: var(--shadow-m) !important;
   font-family: var(--body) !important;
   font-weight: 700 !important;
+  /* a tap on the message goes to what is under it; only its button takes taps */
+  pointer-events: none;
+}
+.cn-toast button {
+  pointer-events: auto;
 }

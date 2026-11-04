@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { popTakenBySheet } from '@/hooks/use-back-stack'
 
 // A small stack of screens inside one tab (e.g. Today → session → exercise).
@@ -22,6 +23,7 @@ export function useScreens<T>(root: T) {
 
   const push = useCallback((screen: T) => {
     scrolls.current.push(window.scrollY)
+    toast.dismiss() // a message about the screen she left
     window.history.pushState({ gemeas: true }, '')
     setStack((s) => [...s, screen])
     window.scrollTo(0, 0)

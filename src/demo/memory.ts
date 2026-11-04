@@ -2,7 +2,7 @@
 // database (src/demo/db.ts). It follows the same rules (src/data/rules.ts) and checks
 // the same limits as the database. No network.
 import type { Backend } from '@/data/api'
-import { check, checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, isPill, kindOf, LIMITS, walkRow } from '@/data/rules'
+import { check, checkInRow, clearsOnStatus, FOOT, FOOT_TIMING, kindOf, LIMITS, walkRow } from '@/data/rules'
 import type { ActivityRow, CheckIns, DayDot, DaySession } from '@/data/types'
 import { scriptedProposal, scriptedReply } from '@/demo/coach-replies'
 import type { Db } from '@/demo/db'
@@ -68,7 +68,7 @@ export function createMemoryBackend(db: () => Db, options: { latencyMs?: () => n
       await wait()
       const d = db()
       const byDay: Record<string, DayDot[]> = {}
-      for (const p of d.plan_sessions.filter((x) => x.date >= from && x.date <= to && !isPill(x.kind)).sort(bySlot)) {
+      for (const p of d.plan_sessions.filter((x) => x.date >= from && x.date <= to).sort(bySlot)) {
         ;(byDay[p.date] ??= []).push({ id: p.id, slot: p.slot, kind: kindOf(p.kind), status: logOf(p.id)?.status ?? null })
       }
       return byDay

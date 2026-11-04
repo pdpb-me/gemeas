@@ -33,7 +33,7 @@ export interface Backend {
 
   // Reads
   day(date: string): Promise<DaySession[]>
-  weekDots(from: string, to: string): Promise<Record<string, DayDot[]>> // pills stay out
+  weekDots(from: string, to: string): Promise<Record<string, DayDot[]>> // pills too: they count in the week
   checkIns(date: string): Promise<CheckIns>
   lastLog(before: string): Promise<LastLog> // the latest day before this one with a log or a check-in
   progress(today: string): Promise<ProgressData>

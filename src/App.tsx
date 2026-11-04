@@ -20,6 +20,9 @@ const TABS = [
   ...(DemoLibrary ? [{ id: 'library', label: 'Esercizi', icon: DumbbellIcon }] : []),
 ]
 
+// Where each tab was scrolled, so coming back finds her place (the chat goes to its end itself)
+const scrolled: Record<string, number> = {}
+
 function App() {
   const signedIn = useSession()
   const hasCoach = useCoachAvailable(signedIn === true)
@@ -61,9 +64,15 @@ function App() {
                 key={id}
                 type="button"
                 onClick={() => {
+                  scrolled[tab] = window.scrollY
                   setTab(id)
                   setDeep(false)
-                  window.scrollTo(0, 0)
+                  const y = id === tab || id === 'coach' ? 0 : (scrolled[id] ?? 0)
+                  if (id !== 'coach') {
+                    window.scrollTo(0, 0)
+                    // once the tab has drawn (its data is already in memory)
+                    requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)))
+                  }
                 }}
                 aria-current={tab === id ? 'page' : undefined}
                 className={cn(

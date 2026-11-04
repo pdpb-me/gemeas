@@ -80,11 +80,11 @@ describe('how hard a lesson was', () => {
 })
 
 describe('pills', () => {
-  it('stay in the day but out of the week’s dots', async () => {
+  it('stay in the day and count in the week’s dots', async () => {
     plan('pill', 'pill')
     expect((await api.day('2026-11-19')).map((s) => s.id)).toContain('pill')
     const dots = await api.weekDots('2026-11-16', '2026-11-22')
-    expect(dots['2026-11-19'].map((d) => d.id)).not.toContain('pill')
+    expect(dots['2026-11-19'].map((d) => d.id)).toContain('pill')
   })
 
   it('list in the order the coach set, before or after the lesson', async () => {
